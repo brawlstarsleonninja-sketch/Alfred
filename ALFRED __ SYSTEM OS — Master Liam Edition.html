@@ -1,0 +1,2690 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="theme-color" content="#000000" />
+  <title>ALFRED // SYSTEM OS — Master Liam Edition</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700;800&family=Orbitron:wght@500;700;800;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            display: ['"Orbitron"', 'sans-serif'],
+            body: ['"Rajdhani"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            void: '#000000',
+            panel: '#06080e',
+            batGold: '#fbbf24',
+            batBlue: '#00f3ff',
+            batRed: '#ff2a5f',
+            batPurple: '#a855f7',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+    html, body {
+      background-color: #000000;
+      color: #e2e8f0;
+      font-family: 'Rajdhani', sans-serif;
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+    body {
+      background-image:
+        radial-gradient(circle at 15% 10%, rgba(251, 191, 36, 0.05) 0%, transparent 40%),
+        radial-gradient(circle at 85% 90%, rgba(0, 243, 255, 0.04) 0%, transparent 40%),
+        linear-gradient(rgba(251, 191, 36, 0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(251, 191, 36, 0.02) 1px, transparent 1px);
+      background-size: 100% 100%, 100% 100%, 32px 32px, 32px 32px;
+    }
+
+    /* Scanlines */
+    .scanlines {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 90;
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
+      background-size: 100% 4px;
+      opacity: 0.35;
+    }
+
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: #000000; }
+    ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 99px; }
+    ::-webkit-scrollbar-thumb:hover { background: #fbbf24; }
+
+    /* Batcave Tactical Glass Panels */
+    .hud-panel {
+      background: linear-gradient(155deg, rgba(7, 9, 15, 0.95), rgba(2, 3, 6, 0.99));
+      border: 1px solid rgba(251, 191, 36, 0.28);
+      box-shadow: 0 0 22px rgba(251, 191, 36, 0.06), inset 0 0 16px rgba(251, 191, 36, 0.02);
+      backdrop-filter: blur(10px);
+    }
+    .hud-panel-blue {
+      background: linear-gradient(155deg, rgba(7, 14, 22, 0.95), rgba(2, 5, 8, 0.99));
+      border: 1px solid rgba(0, 243, 255, 0.28);
+      box-shadow: 0 0 22px rgba(0, 243, 255, 0.06);
+    }
+    .hud-panel-purple {
+      background: linear-gradient(155deg, rgba(16, 8, 24, 0.95), rgba(4, 2, 8, 0.99));
+      border: 1px solid rgba(168, 85, 247, 0.32);
+      box-shadow: 0 0 22px rgba(168, 85, 247, 0.08);
+    }
+    .hud-panel-crimson {
+      background: linear-gradient(155deg, rgba(22, 7, 13, 0.95), rgba(5, 2, 4, 0.99));
+      border: 1px solid rgba(255, 42, 95, 0.32);
+      box-shadow: 0 0 22px rgba(255, 42, 95, 0.08);
+    }
+
+    .glow-gold { text-shadow: 0 0 12px rgba(251, 191, 36, 0.75); }
+    .glow-cyan { text-shadow: 0 0 12px rgba(0, 243, 255, 0.75); }
+
+    @keyframes petRoam {
+      0%   { transform: translate(0px, 0px) scaleX(1) rotate(0deg); }
+      25%  { transform: translate(32px, -6px) scaleX(1) rotate(3deg); }
+      50%  { transform: translate(60px, 0px) scaleX(1) rotate(-2deg); }
+      52%  { transform: translate(60px, -3px) scaleX(-1) rotate(0deg); }
+      75%  { transform: translate(24px, -6px) scaleX(-1) rotate(-3deg); }
+      100% { transform: translate(0px, 0px) scaleX(-1) rotate(0deg); }
+    }
+    @keyframes petBurst {
+      0%, 100% { transform: scale(1) translateY(0); }
+      30% { transform: scale(1.3) translateY(-18px) rotate(-10deg); }
+      60% { transform: scale(1.2) translateY(-12px) rotate(10deg); }
+    }
+    @keyframes eggShake {
+      0%, 100% { transform: rotate(0deg); }
+      20% { transform: rotate(-8deg); }
+      40% { transform: rotate(8deg); }
+      60% { transform: rotate(-4deg); }
+      80% { transform: rotate(4deg); }
+    }
+
+    .pet-roam { animation: petRoam 7s ease-in-out infinite; display: inline-block; }
+    .pet-burst { animation: petBurst 0.6s ease-in-out; display: inline-block; }
+    .egg-shake { animation: eggShake 1.6s ease-in-out infinite; display: inline-block; }
+
+    .btn-hud {
+      transition: transform 0.14s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    }
+    .btn-hud:active { transform: scale(0.95); }
+    .tab-view { display: none; animation: hudFade 0.2s ease-out; }
+    .tab-view.active { display: block; }
+    @keyframes hudFade {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body class="pb-24 selection:bg-amber-400 selection:text-black">
+  <div class="scanlines"></div>
+
+  <!-- ===================================================================== -->
+  <!-- TOP HEADER (BATCAVE TACTICAL HUD)                                    -->
+  <!-- ===================================================================== -->
+  <header class="sticky top-0 z-40 bg-black/95 backdrop-blur-md border-b border-amber-400/40 px-3 sm:px-6 py-2.5">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
+      <!-- Branding & Clock -->
+      <div class="flex items-center gap-3">
+        <div class="relative w-10 h-10 rounded-xl bg-amber-950/50 border border-amber-400/75 flex items-center justify-center shadow-[0_0_18px_rgba(251,191,36,0.35)]">
+          <span class="text-xl">🦇</span>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="font-display font-black text-sm sm:text-base tracking-wider text-white">ALFRED <span class="text-amber-400">//</span> OS</span>
+            <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-400/40">MASTER LIAM</span>
+          </div>
+          <div class="flex items-center gap-2 text-xs font-mono text-slate-400">
+            <span id="hud-date">---</span>
+            <span class="text-amber-500">•</span>
+            <span id="hud-clock" class="text-amber-300 font-bold">00:00:00</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Credits Counter -->
+      <div class="flex items-center gap-2">
+        <div id="overdrive-badge" class="hidden text-[10px] font-mono font-bold px-2.5 py-1 rounded-lg bg-cyan-500/20 text-cyan-300 border border-cyan-400/50 animate-pulse">
+          ⚡ 2X ACTIVE
+        </div>
+        <div class="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-amber-950/40 border border-amber-400/60 shadow-[0_0_15px_rgba(251,191,36,0.2)]">
+          <span class="text-lg">🪙</span>
+          <div>
+            <div class="text-[9px] font-mono uppercase tracking-widest text-amber-300/80">CREDITS</div>
+            <div id="hud-credits" class="font-display font-black text-sm sm:text-base text-amber-300 glow-gold">250</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===================================================================== -->
+  <!-- MAIN APPLICATION CONTAINER                                            -->
+  <!-- ===================================================================== -->
+  <main class="max-w-7xl mx-auto px-3 sm:px-6 pt-4 space-y-5">
+
+    <!-- =================================================================== -->
+    <!-- VIEW 1: COMMAND DASHBOARD (MAIN HUD)                                -->
+    <!-- =================================================================== -->
+    <section id="view-home" class="tab-view active space-y-5">
+
+      <!-- TOP ACTION BAR: Energy Ignition, System Motivation, Daily Prayer -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <button onclick="openEnergyIgnition()" class="btn-hud hud-panel rounded-2xl p-4 flex items-center justify-between text-left hover:border-amber-400 group">
+          <div>
+            <div class="text-[10px] font-mono text-amber-400 tracking-widest uppercase">PRE-TASK BOOSTER</div>
+            <div class="font-display font-bold text-base sm:text-lg text-white group-hover:text-amber-300">⚡ ENERGY IGNITION</div>
+            <div class="text-xs text-slate-400">Micro-workout + Credits</div>
+          </div>
+          <div class="w-11 h-11 rounded-xl bg-amber-500/15 border border-amber-400/40 flex items-center justify-center text-2xl group-hover:scale-110 transition">⚡</div>
+        </button>
+
+        <button onclick="openSystemMotivation()" class="btn-hud hud-panel-purple rounded-2xl p-4 flex items-center justify-between text-left hover:border-purple-400 group">
+          <div>
+            <div class="text-[10px] font-mono text-purple-400 tracking-widest uppercase">DISCIPLINE OVERRIDE</div>
+            <div class="font-display font-bold text-base sm:text-lg text-white group-hover:text-purple-300">🔥 SYSTEM MOTIVATION</div>
+            <div class="text-xs text-slate-400">Refuse to quit. Arise stronger.</div>
+          </div>
+          <div class="w-11 h-11 rounded-xl bg-purple-500/15 border border-purple-400/40 flex items-center justify-center text-2xl group-hover:scale-110 transition">🔥</div>
+        </button>
+
+        <button onclick="openDailyPray()" class="btn-hud hud-panel-blue rounded-2xl p-4 flex items-center justify-between text-left hover:border-cyan-400 group">
+          <div>
+            <div class="text-[10px] font-mono text-cyan-400 tracking-widest uppercase">RESETS DAILY</div>
+            <div class="font-display font-bold text-base sm:text-lg text-white group-hover:text-cyan-300">🙏 DAILY PRAYER</div>
+            <div class="text-xs text-slate-400">Strength, peace & gratitude</div>
+          </div>
+          <div class="w-11 h-11 rounded-xl bg-cyan-500/15 border border-cyan-400/40 flex items-center justify-center text-2xl group-hover:scale-110 transition">✨</div>
+        </button>
+      </div>
+
+      <!-- PET HABITAT + MICROPHONE VOICE CHAT + INCUBATOR + PINNED YOUTUBE -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+        
+        <!-- Equipped Pet Habitat & Microphone Voice Chat -->
+        <div class="lg:col-span-5 hud-panel rounded-2xl p-4 relative overflow-hidden flex flex-col justify-between min-h-[160px]">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span id="main-pet-rarity" class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-400/40">COMMON</span>
+              <span id="main-pet-name" class="font-display font-bold text-sm sm:text-base text-white">Bat Wingling</span>
+            </div>
+            <!-- Microphone Voice Chat Button -->
+            <button onclick="startPetMicrophone()" class="btn-hud flex items-center gap-1.5 px-3 py-1 rounded-xl bg-amber-500/20 border border-amber-400/60 text-amber-300 font-mono text-xs font-bold animate-pulse">
+              🎙️ TALK TO PET
+            </button>
+          </div>
+
+          <!-- Animated Roaming Stage & Speech Bubble -->
+          <div class="relative my-2 h-14 rounded-xl bg-black/75 border border-amber-500/25 flex items-center px-4 overflow-hidden">
+            <div class="absolute inset-x-0 bottom-1 h-[1px] bg-gradient-to-r from-transparent via-amber-400/50 to-transparent"></div>
+            <div id="main-pet-mover" class="pet-roam select-none cursor-pointer" onclick="interactWithPet()">
+              <span id="main-pet-emoji" class="text-4xl sm:text-5xl drop-shadow-[0_0_12px_rgba(251,191,36,0.65)]">🦇</span>
+            </div>
+            <div class="ml-auto max-w-[62%] bg-slate-900/95 border border-amber-500/40 rounded-xl px-2.5 py-1.5 text-[11px] text-amber-200 italic">
+              <span id="main-pet-speech">"Ready for patrol, Master Liam!"</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Egg Incubator Chamber -->
+        <div class="lg:col-span-4 hud-panel-blue rounded-2xl p-4 flex items-center justify-between gap-3">
+          <div class="flex items-center gap-3 min-w-0">
+            <div id="main-egg-emoji" class="w-14 h-14 rounded-2xl bg-cyan-950/60 border border-cyan-400/40 flex items-center justify-center text-3xl egg-shake shrink-0">🥚</div>
+            <div class="min-w-0">
+              <div class="text-[10px] font-mono text-cyan-400 uppercase tracking-widest">INCUBATION CHAMBER</div>
+              <div id="main-egg-name" class="font-display font-bold text-sm text-white truncate">No Egg Incubating</div>
+              <div id="main-egg-sub" class="text-xs text-slate-400 truncate">Buy one of 20 Eggs in Shop!</div>
+              <div class="w-32 sm:w-36 h-2 bg-slate-900 rounded-full overflow-hidden mt-2 border border-slate-700">
+                <div id="main-egg-bar" class="h-full bg-gradient-to-r from-cyan-400 to-amber-400 transition-all duration-500" style="width: 0%"></div>
+              </div>
+            </div>
+          </div>
+          <button onclick="switchTab('shop')" class="btn-hud px-3 py-2 rounded-xl bg-cyan-500/20 border border-cyan-400/50 text-cyan-300 font-display font-bold text-xs shrink-0">
+            SHOP (20 EGGS)
+          </button>
+        </div>
+
+        <!-- Pinned Lozziniho YouTube Idea Reminder Box -->
+        <div class="lg:col-span-3 hud-panel-crimson rounded-2xl p-4 flex flex-col justify-between">
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] font-mono text-rose-400 uppercase tracking-widest flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-rose-500 animate-ping"></span> YT IDEA PINNED
+            </span>
+            <button onclick="switchTab('ai')" class="text-[11px] font-mono text-amber-300 hover:underline">Lozziniho →</button>
+          </div>
+          <div id="main-pinned-yt" class="font-display font-bold text-xs sm:text-sm text-white my-1.5 line-clamp-2">
+            No video pinned yet. Ask Lozziniho for 10 viral ideas!
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] text-slate-400">+50 🪙 + Loot on completion</span>
+            <button id="main-complete-yt-btn" onclick="completePinnedYoutube()" class="hidden btn-hud px-2.5 py-1 rounded-lg bg-rose-500/25 border border-rose-400 text-rose-200 font-mono text-[11px] font-bold hover:bg-rose-500 hover:text-white">
+              ✓ DONE
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- WORKSPACE GRID: HABITS & TO-DOS (LEFT) vs DAILY QUESTS, SONG & FACT (RIGHT) -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        
+        <!-- LEFT 7 COLS: TODAY'S HABITS + DAILY TO-DO LIST -->
+        <div class="lg:col-span-7 space-y-5">
+          
+          <!-- Today's Habits -->
+          <div class="hud-panel rounded-2xl p-4 sm:p-5">
+            <div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-amber-500/20">
+              <div>
+                <div class="text-[10px] font-mono text-amber-400 uppercase tracking-widest">CALENDAR 1 • RECURRING ROUTINE</div>
+                <h2 class="font-display font-bold text-lg text-white">📋 TODAY'S HABITS (<span id="home-day-label" class="text-amber-300">---</span>)</h2>
+              </div>
+              <div class="flex items-center gap-2">
+                <span id="home-habit-count" class="text-xs font-mono px-2.5 py-1 rounded-lg bg-amber-950 text-amber-300 border border-amber-500/30">0/0</span>
+                <button onclick="switchTab('calendar')" class="btn-hud px-3 py-1.5 rounded-xl bg-amber-500/20 border border-amber-400/40 text-amber-300 text-xs font-bold">ALL DAYS</button>
+              </div>
+            </div>
+            <div id="home-habits-container" class="mt-3 space-y-2.5"></div>
+          </div>
+
+          <!-- Daily To-Do List (Calendar 3) -->
+          <div class="hud-panel-blue rounded-2xl p-4 sm:p-5">
+            <div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-cyan-500/20">
+              <div>
+                <div class="text-[10px] font-mono text-cyan-400 uppercase tracking-widest">CALENDAR 3 • RESETS DAILY</div>
+                <h2 class="font-display font-bold text-lg text-white">📝 DAILY TO-DO LIST & DEADLINES</h2>
+              </div>
+              <button onclick="switchTab('calendar')" class="btn-hud px-3 py-1.5 rounded-xl bg-cyan-500/20 border border-cyan-400/40 text-cyan-300 text-xs font-bold">+ MANAGE</button>
+            </div>
+
+            <form onsubmit="addTodoItem(event, 'home')" class="mt-3 flex flex-col sm:flex-row gap-2">
+              <input id="home-todo-title" type="text" required placeholder="Add homework or task..." class="flex-1 bg-black/70 border border-cyan-500/35 rounded-xl px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400" />
+              <input id="home-todo-deadline" type="time" class="bg-black/70 border border-cyan-500/35 rounded-xl px-3 py-2 text-sm text-cyan-200 focus:outline-none focus:border-cyan-400" />
+              <button type="submit" class="btn-hud px-4 py-2 rounded-xl bg-cyan-500 text-black font-display font-bold text-xs hover:bg-cyan-400">+ ADD</button>
+            </form>
+
+            <div id="home-todos-container" class="mt-3 space-y-2"></div>
+          </div>
+
+        </div>
+
+        <!-- RIGHT 5 COLS: DAILY 3 QUESTS + SONG + FACT -->
+        <div class="lg:col-span-5 space-y-5">
+          
+          <!-- Daily 3 Quests -->
+          <div class="hud-panel-purple rounded-2xl p-4 sm:p-5">
+            <div class="flex items-center justify-between pb-3 border-b border-purple-500/25">
+              <div>
+                <div class="text-[10px] font-mono text-purple-400 uppercase tracking-widest">AUTO-GENERATED • RESETS DAILY</div>
+                <h2 class="font-display font-bold text-lg text-white">⚔️ DAILY 3 QUESTS</h2>
+              </div>
+              <button onclick="rerollDailyQuests()" class="btn-hud text-xs font-mono px-2.5 py-1 rounded-lg bg-purple-500/15 border border-purple-400/40 text-purple-300 hover:bg-purple-500/25">
+                ↻ REROLL
+              </button>
+            </div>
+            <div id="home-quests-container" class="mt-3 space-y-2.5"></div>
+          </div>
+
+          <!-- Daily English Song Recommendation -->
+          <div class="hud-panel rounded-2xl p-4 sm:p-5">
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] font-mono text-amber-400 uppercase tracking-widest">🎧 DAILY ENGLISH SONG (RESETS DAILY)</span>
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-500/15 text-amber-300">SOUNDTRACK</span>
+            </div>
+            <div class="mt-2.5 flex items-start gap-3">
+              <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500/30 to-purple-600/30 border border-amber-400/40 flex items-center justify-center text-2xl shrink-0">🎵</div>
+              <div>
+                <h3 id="daily-song-title" class="font-display font-bold text-base text-white">---</h3>
+                <div id="daily-song-artist" class="text-xs font-mono text-amber-300">---</div>
+                <p id="daily-song-desc" class="text-xs text-slate-300 mt-1">---</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Daily Discovery Fact -->
+          <div class="hud-panel-blue rounded-2xl p-4 sm:p-5">
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] font-mono text-cyan-400 uppercase tracking-widest">🧠 DAILY DISCOVERY FACT (RESETS DAILY)</span>
+              <span id="daily-fact-tag" class="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">PHYSICS</span>
+            </div>
+            <p id="daily-fact-body" class="text-sm text-slate-200 mt-2.5 leading-relaxed">---</p>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- RANDOM REWARD LOOT POOL MANAGER -->
+      <div class="hud-panel rounded-2xl p-4 sm:p-5">
+        <div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-amber-500/20">
+          <div>
+            <div class="text-[10px] font-mono text-amber-400 uppercase tracking-widest">DOPAMINE LOOT ENGINE</div>
+            <h2 class="font-display font-bold text-lg text-white">🎁 TASK REWARD POOL (1 RANDOM REWARD PER COMPLETED TASK)</h2>
+          </div>
+          <span class="text-xs text-slate-400">Add your custom rewards anytime!</span>
+        </div>
+
+        <form onsubmit="addCustomReward(event)" class="mt-3 flex gap-2">
+          <input id="custom-reward-input" type="text" required placeholder="Add reward (e.g. 15 mins TikTok, favorite drink)..." class="flex-1 bg-black/70 border border-amber-500/35 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-amber-400" />
+          <button type="submit" class="btn-hud px-4 py-2.5 rounded-xl bg-amber-400 text-black font-display font-bold text-xs hover:bg-amber-300">+ ADD REWARD</button>
+        </form>
+
+        <div id="rewards-pool-list" class="mt-3 flex flex-wrap gap-2"></div>
+      </div>
+
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- VIEW 2: TRIPLE CALENDAR SYSTEM                                      -->
+    <!-- =================================================================== -->
+    <section id="view-calendar" class="tab-view space-y-5">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        
+        <!-- CALENDAR 1: WEEKLY HABITS -->
+        <div class="hud-panel rounded-2xl p-4 sm:p-5 space-y-4">
+          <div class="border-b border-amber-500/20 pb-3">
+            <div class="text-[10px] font-mono text-amber-400 uppercase tracking-widest">CALENDAR 1 • WEEKLY RECURRING</div>
+            <h2 class="font-display font-bold text-lg text-white">📅 HABITS CALENDAR</h2>
+            <p class="text-xs text-slate-400">Tap any day to check and tick habits.</p>
+          </div>
+
+          <div id="cal-habit-days" class="grid grid-cols-7 gap-1"></div>
+
+          <div class="bg-black/50 rounded-xl p-3 border border-amber-500/25">
+            <div class="flex items-center justify-between mb-2">
+              <span id="cal-selected-day-title" class="font-display font-bold text-xs text-amber-300">MONDAY TASKS</span>
+              <span class="text-[10px] font-mono text-slate-400">Tap to tick</span>
+            </div>
+            <div id="cal-selected-day-list" class="space-y-2"></div>
+          </div>
+
+          <form onsubmit="addWeeklyHabit(event)" class="space-y-2.5 pt-2 border-t border-slate-800">
+            <div class="text-xs font-display font-bold text-white">+ ADD RECURRING HABIT</div>
+            <input id="new-habit-name" type="text" required placeholder="Habit (e.g., Tactical drills, Study)..." class="w-full bg-black/70 border border-amber-500/35 rounded-xl px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none" />
+            <div class="text-[11px] font-mono text-slate-400">Repeat every week on:</div>
+            <div id="new-habit-day-toggles" class="grid grid-cols-7 gap-1"></div>
+            <button type="submit" class="w-full btn-hud py-2.5 rounded-xl bg-amber-400 text-black font-display font-bold text-xs hover:bg-amber-300">
+              SAVE HABIT
+            </button>
+          </form>
+        </div>
+
+        <!-- CALENDAR 2: SPECIAL EVENTS (FOOTBALL, EXAMS) -->
+        <div class="hud-panel-blue rounded-2xl p-4 sm:p-5 space-y-4">
+          <div class="border-b border-cyan-500/25 pb-3">
+            <div class="text-[10px] font-mono text-cyan-400 uppercase tracking-widest">CALENDAR 2 • HIGH-STAKES DATES</div>
+            <h2 class="font-display font-bold text-lg text-white">🏆 SPECIAL EVENTS</h2>
+            <p class="text-xs text-slate-400">Set football competitions, exams, and tournaments.</p>
+          </div>
+
+          <form onsubmit="addSpecialEvent(event)" class="space-y-2 bg-black/50 p-3 rounded-xl border border-cyan-500/25">
+            <input id="se-title" type="text" required placeholder="Event (e.g. Football Finals, Physics Exam)" class="w-full bg-black/75 border border-cyan-500/35 rounded-xl px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none" />
+            <div class="grid grid-cols-2 gap-2">
+              <input id="se-date" type="date" required class="bg-black/75 border border-cyan-500/35 rounded-xl px-2.5 py-2 text-xs text-white focus:outline-none" />
+              <select id="se-type" class="bg-black/75 border border-cyan-500/35 rounded-xl px-2.5 py-2 text-xs text-white focus:outline-none">
+                <option value="⚽ Football Comp">⚽ Football Comp</option>
+                <option value="📚 Exam">📚 Exam</option>
+                <option value="🎮 Tournament">🎮 Tournament</option>
+                <option value="⭐ Special Event">⭐ Special Event</option>
+              </select>
+            </div>
+            <button type="submit" class="w-full btn-hud py-2 rounded-xl bg-cyan-500 text-black font-display font-bold text-xs hover:bg-cyan-400">
+              + ADD SPECIAL EVENT
+            </button>
+          </form>
+
+          <div id="cal-special-events-list" class="space-y-2 max-h-[370px] overflow-y-auto pr-1"></div>
+        </div>
+
+        <!-- CALENDAR 3: DAILY TO-DO LIST -->
+        <div class="hud-panel-purple rounded-2xl p-4 sm:p-5 space-y-4">
+          <div class="border-b border-purple-500/25 pb-3">
+            <div class="text-[10px] font-mono text-purple-400 uppercase tracking-widest">CALENDAR 3 • RESETS DAILY</div>
+            <h2 class="font-display font-bold text-lg text-white">📝 DAILY TO-DO LIST</h2>
+            <p class="text-xs text-slate-400">Tick tasks to earn credits & random rewards.</p>
+          </div>
+
+          <form onsubmit="addTodoItem(event, 'cal')" class="space-y-2 bg-black/50 p-3 rounded-xl border border-purple-500/25">
+            <input id="cal-todo-title" type="text" required placeholder="Task (e.g. Homework)..." class="w-full bg-black/75 border border-purple-500/35 rounded-xl px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none" />
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-mono text-purple-300 shrink-0">Deadline:</span>
+              <input id="cal-todo-deadline" type="time" class="flex-1 bg-black/75 border border-purple-500/35 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none" />
+            </div>
+            <button type="submit" class="w-full btn-hud py-2 rounded-xl bg-purple-600 text-white font-display font-bold text-xs hover:bg-purple-500">
+              + ADD TO-DO
+            </button>
+          </form>
+
+          <div id="cal-todos-list" class="space-y-2 max-h-[370px] overflow-y-auto pr-1"></div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- VIEW 3: SHOP & 20-EGG HATCHERY                                      -->
+    <!-- =================================================================== -->
+    <section id="view-shop" class="tab-view space-y-5">
+      
+      <!-- Top Row: Chamber + Boosters + Energy Activity Adder -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        
+        <div class="hud-panel-blue rounded-2xl p-4 flex flex-col justify-between">
+          <div class="flex items-center gap-3">
+            <div id="shop-egg-icon" class="w-14 h-14 rounded-2xl bg-cyan-500/15 border border-cyan-400/50 flex items-center justify-center text-4xl egg-shake shrink-0">🥚</div>
+            <div>
+              <div class="text-[10px] font-mono text-cyan-400 uppercase tracking-widest">INCUBATION CHAMBER</div>
+              <h3 id="shop-egg-title" class="font-display font-bold text-base text-white">Empty Chamber</h3>
+              <p id="shop-egg-desc" class="text-xs text-slate-300">Buy any of the 20 Mystery Eggs below!</p>
+            </div>
+          </div>
+          <button id="shop-hatch-now-btn" onclick="useInstantHatch()" class="hidden mt-3 w-full btn-hud py-2 rounded-xl bg-cyan-400 text-black font-display font-bold text-xs hover:bg-cyan-300">
+            ⚡ INSTANT HATCH ACCELERATOR (50 🪙)
+          </button>
+        </div>
+
+        <div class="hud-panel-purple rounded-2xl p-4 space-y-2.5">
+          <div class="text-[10px] font-mono text-purple-400 uppercase tracking-widest">SYSTEM UPGRADES</div>
+          <div class="grid grid-cols-2 gap-2">
+            <button onclick="buyShopBooster('overdrive')" class="btn-hud p-2.5 rounded-xl bg-black/60 border border-purple-500/35 text-left hover:border-cyan-400">
+              <div class="text-lg">⚡</div>
+              <div class="font-display font-bold text-xs text-white">2x Overdrive</div>
+              <div class="text-[10px] text-slate-400">Double credits for 5 tasks</div>
+              <div class="text-[11px] font-mono text-amber-300 mt-1">100 🪙</div>
+            </button>
+            <button onclick="buyShopBooster('aura')" class="btn-hud p-2.5 rounded-xl bg-black/60 border border-purple-500/35 text-left hover:border-amber-400">
+              <div class="text-lg">💠</div>
+              <div class="font-display font-bold text-xs text-white">Tactical Aura</div>
+              <div class="text-[10px] text-slate-400">Glowing aura on Pet Habitat</div>
+              <div class="text-[11px] font-mono text-amber-300 mt-1">150 🪙</div>
+            </button>
+          </div>
+        </div>
+
+        <div class="hud-panel rounded-2xl p-4 flex flex-col justify-between">
+          <div>
+            <div class="text-[10px] font-mono text-amber-400 uppercase tracking-widest">CUSTOMIZE ENERGY IGNITION</div>
+            <h3 class="font-display font-bold text-sm text-white">⚡ ADD PRE-TASK ACTIVITY</h3>
+            <p class="text-xs text-slate-400">Add custom workouts to Energy Ignition.</p>
+          </div>
+          <form onsubmit="addCustomEnergyActivity(event)" class="mt-2 flex gap-2">
+            <input id="custom-energy-input" type="text" required placeholder="e.g. 30 Jumping Jacks..." class="flex-1 bg-black/70 border border-amber-500/35 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none" />
+            <button type="submit" class="btn-hud px-3.5 py-2 rounded-xl bg-amber-400 text-black font-display font-bold text-xs">ADD</button>
+          </form>
+        </div>
+
+      </div>
+
+      <!-- Unlocked Pets Roster -->
+      <div class="hud-panel-purple rounded-2xl p-4 sm:p-5">
+        <div class="flex items-center justify-between pb-3 border-b border-purple-500/20">
+          <div>
+            <div class="text-[10px] font-mono text-purple-400 uppercase tracking-widest">COMPANION ROSTER</div>
+            <h2 class="font-display font-bold text-lg text-white">🐾 MY UNLOCKED PETS (<span id="unlocked-pets-count">1</span>/20)</h2>
+          </div>
+          <span class="text-xs text-slate-400">Equip to animate live on Main Screen & speak via microphone!</span>
+        </div>
+        <div id="pets-roster-grid" class="mt-3 grid grid-cols-2 sm:grid-cols-5 gap-3"></div>
+      </div>
+
+      <!-- 20 Mystery Eggs Hatchery -->
+      <div class="hud-panel rounded-2xl p-4 sm:p-5">
+        <div class="pb-3 border-b border-amber-500/20 flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <div class="text-[10px] font-mono text-amber-400 uppercase tracking-widest">MYSTERY EGG HATCHERY</div>
+            <h2 class="font-display font-bold text-xl text-white">🥚 20 MYSTERY EGGS SHOP</h2>
+          </div>
+          <span class="text-xs font-mono text-amber-300">Rarities: Common to Sovereign</span>
+        </div>
+        <div id="eggs-shop-grid" class="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5"></div>
+      </div>
+
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- VIEW 4: ARCADE ARENA                                                -->
+    <!-- =================================================================== -->
+    <section id="view-arcade" class="tab-view space-y-4">
+      <div class="hud-panel rounded-2xl p-4">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <div class="text-[10px] font-mono text-amber-400 uppercase tracking-widest">BATCAVE TRAINING SIMULATOR</div>
+            <h2 class="font-display font-bold text-xl text-white">🕹️ ARCADE ARENA — WIN FOR CREDITS</h2>
+          </div>
+          <div class="flex flex-wrap gap-1.5">
+            <button onclick="selectArcade('sf')" id="arc-btn-sf" class="btn-hud px-3 py-2 rounded-xl font-display font-bold text-xs bg-rose-600 text-white">🥊 STREET FIGHTER</button>
+            <button onclick="selectArcade('mech')" id="arc-btn-mech" class="btn-hud px-3 py-2 rounded-xl font-display font-bold text-xs bg-slate-900 text-slate-300 border border-slate-700">🤖 ROBOT ARENA</button>
+            <button onclick="selectArcade('snake')" id="arc-btn-snake" class="btn-hud px-3 py-2 rounded-xl font-display font-bold text-xs bg-slate-900 text-slate-300 border border-slate-700">🐍 SNAKE</button>
+            <button onclick="selectArcade('pong')" id="arc-btn-pong" class="btn-hud px-3 py-2 rounded-xl font-display font-bold text-xs bg-slate-900 text-slate-300 border border-slate-700">🏓 PONG</button>
+            <button onclick="selectArcade('ttt')" id="arc-btn-ttt" class="btn-hud px-3 py-2 rounded-xl font-display font-bold text-xs bg-slate-900 text-slate-300 border border-slate-700">❌ TIC-TAC-TOE</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 1. STREET FIGHTER -->
+      <div id="arc-panel-sf" class="hud-panel-crimson rounded-2xl p-4 sm:p-5 space-y-3">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <h3 class="font-display font-bold text-lg text-rose-400">🥊 STREET FIGHTER: SHADOW DUEL</h3>
+            <p class="text-xs text-slate-400">Defeat AI Bot to win <span class="text-amber-300 font-bold">+40 Credits</span>!</p>
+          </div>
+          <button onclick="initStreetFighter()" class="btn-hud px-4 py-2 rounded-xl bg-rose-600 text-white font-display font-bold text-xs">↻ REMATCH</button>
+        </div>
+
+        <div class="grid grid-cols-11 items-center gap-2 bg-black/80 p-3 rounded-xl border border-rose-500/30">
+          <div class="col-span-5">
+            <div class="flex justify-between text-xs font-display font-bold text-cyan-300 mb-1">
+              <span>LIAM</span><span id="sf-p1-txt">100%</span>
+            </div>
+            <div class="h-3 bg-slate-900 rounded-full overflow-hidden border border-cyan-500/40">
+              <div id="sf-p1-bar" class="h-full bg-cyan-400 transition-all duration-150" style="width:100%"></div>
+            </div>
+          </div>
+          <div class="col-span-1 text-center font-display font-black text-amber-400 text-xs sm:text-sm">VS</div>
+          <div class="col-span-5">
+            <div class="flex justify-between text-xs font-display font-bold text-rose-400 mb-1">
+              <span id="sf-ai-txt">100%</span><span>BOT</span>
+            </div>
+            <div class="h-3 bg-slate-900 rounded-full overflow-hidden border border-rose-500/40">
+              <div id="sf-ai-bar" class="h-full bg-rose-500 transition-all duration-150 ml-auto" style="width:100%"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="relative max-w-3xl mx-auto rounded-2xl overflow-hidden border border-rose-500/40 bg-black">
+          <canvas id="sf-canvas" class="w-full h-[250px] sm:h-[300px] block"></canvas>
+          <div id="sf-overlay" class="hidden absolute inset-0 bg-black/85 flex flex-col items-center justify-center text-center p-4">
+            <div id="sf-end-title" class="font-display font-black text-2xl sm:text-4xl text-amber-300 glow-gold">K.O.! YOU WIN!</div>
+            <div id="sf-end-sub" class="text-sm text-cyan-300 mt-1">+40 Credits Awarded!</div>
+            <button onclick="initStreetFighter()" class="mt-4 btn-hud px-6 py-2.5 rounded-xl bg-rose-600 text-white font-display font-bold text-sm">FIGHT AGAIN</button>
+          </div>
+        </div>
+
+        <div class="max-w-3xl mx-auto grid grid-cols-3 sm:grid-cols-6 gap-2">
+          <button onpointerdown="sfMove(-1)" class="btn-hud py-3.5 rounded-xl bg-slate-900 border border-slate-700 text-white font-display font-bold text-xs">◀ LEFT</button>
+          <button onpointerdown="sfMove(1)" class="btn-hud py-3.5 rounded-xl bg-slate-900 border border-slate-700 text-white font-display font-bold text-xs">RIGHT ▶</button>
+          <button onpointerdown="sfAttack('punch')" class="btn-hud py-3.5 rounded-xl bg-cyan-500/20 border border-cyan-400 text-cyan-200 font-display font-bold text-xs">👊 PUNCH</button>
+          <button onpointerdown="sfAttack('kick')" class="btn-hud py-3.5 rounded-xl bg-purple-500/20 border border-purple-400 text-purple-200 font-display font-bold text-xs">🦵 KICK</button>
+          <button onpointerdown="sfAttack('hadouken')" class="btn-hud py-3.5 rounded-xl bg-amber-500/20 border border-amber-400 text-amber-200 font-display font-bold text-xs">🔥 HADOUKEN</button>
+          <button onpointerdown="sfAttack('block')" class="btn-hud py-3.5 rounded-xl bg-emerald-500/20 border border-emerald-400 text-emerald-200 font-display font-bold text-xs">🛡️ BLOCK</button>
+        </div>
+      </div>
+
+      <!-- 2. ROBOT ARENA -->
+      <div id="arc-panel-mech" class="hidden hud-panel-purple rounded-2xl p-4 sm:p-5 space-y-3">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <h3 class="font-display font-bold text-lg text-purple-400">🤖 TITAN MECH WARFARE</h3>
+            <p class="text-xs text-slate-400">Destroy Enemy Mech to win <span class="text-amber-300 font-bold">+45 Credits</span>!</p>
+          </div>
+          <button onclick="initMechArena()" class="btn-hud px-4 py-2 rounded-xl bg-purple-600 text-white font-display font-bold text-xs">↻ NEW BATTLE</button>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3 bg-black/80 p-3 rounded-xl border border-purple-500/30">
+          <div>
+            <div class="flex justify-between text-xs font-mono text-cyan-300 mb-1">
+              <span>MARK-XL (YOU)</span><span id="mech-p1-hp">120 HP</span>
+            </div>
+            <div class="h-3 bg-slate-900 rounded-full overflow-hidden border border-cyan-500/40">
+              <div id="mech-p1-bar" class="h-full bg-cyan-400 transition-all" style="width:100%"></div>
+            </div>
+          </div>
+          <div>
+            <div class="flex justify-between text-xs font-mono text-rose-400 mb-1">
+              <span>OMEGA DRONE</span><span id="mech-ai-hp">120 HP</span>
+            </div>
+            <div class="h-3 bg-slate-900 rounded-full overflow-hidden border border-rose-500/40">
+              <div id="mech-ai-bar" class="h-full bg-rose-500 transition-all ml-auto" style="width:100%"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="max-w-3xl mx-auto rounded-2xl overflow-hidden border border-purple-500/40 bg-black">
+          <canvas id="mech-canvas" class="w-full h-[230px] block"></canvas>
+        </div>
+        <div id="mech-log" class="max-w-3xl mx-auto text-center font-mono text-xs text-amber-300 bg-black/60 py-2 px-3 rounded-xl border border-slate-800">
+          Select a weapon module!
+        </div>
+        <div class="max-w-3xl mx-auto grid grid-cols-2 sm:grid-cols-4 gap-2">
+          <button onclick="mechTurn('laser')" class="btn-hud py-3 rounded-xl bg-cyan-500/20 border border-cyan-400 text-cyan-200 font-display font-bold text-xs">⚡ PLASMA LASER</button>
+          <button onclick="mechTurn('rockets')" class="btn-hud py-3 rounded-xl bg-rose-500/20 border border-rose-400 text-rose-200 font-display font-bold text-xs">🚀 ROCKET SALVO</button>
+          <button onclick="mechTurn('shield')" class="btn-hud py-3 rounded-xl bg-emerald-500/20 border border-emerald-400 text-emerald-200 font-display font-bold text-xs">🛡️ NANO SHIELD</button>
+          <button onclick="mechTurn('overload')" class="btn-hud py-3 rounded-xl bg-amber-500/20 border border-amber-400 text-amber-200 font-display font-bold text-xs">💥 OVERLOAD</button>
+        </div>
+      </div>
+
+      <!-- 3. SNAKE -->
+      <div id="arc-panel-snake" class="hidden hud-panel rounded-2xl p-4 sm:p-5 space-y-3">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="font-display font-bold text-lg text-emerald-400">🐍 BATCAVE SNAKE</h3>
+            <p class="text-xs text-slate-400">Score 8+ to earn <span class="text-amber-300 font-bold">+25 Credits</span>!</p>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="font-mono text-sm text-emerald-300">SCORE: <strong id="snake-score-val">0</strong></span>
+            <button onclick="initSnake()" class="btn-hud px-4 py-2 rounded-xl bg-emerald-500 text-black font-display font-bold text-xs">START</button>
+          </div>
+        </div>
+        <div class="max-w-xs sm:max-w-sm mx-auto rounded-2xl overflow-hidden border border-emerald-500/40 bg-black">
+          <canvas id="snake-canvas" class="w-full aspect-square block"></canvas>
+        </div>
+        <div class="max-w-[210px] mx-auto grid grid-cols-3 gap-2">
+          <div></div>
+          <button onclick="setSnakeDir(0,-1)" class="btn-hud py-3 rounded-xl bg-slate-900 border border-emerald-500/40 text-emerald-300 font-bold">▲</button>
+          <div></div>
+          <button onclick="setSnakeDir(-1,0)" class="btn-hud py-3 rounded-xl bg-slate-900 border border-emerald-500/40 text-emerald-300 font-bold">◀</button>
+          <button onclick="setSnakeDir(0,1)" class="btn-hud py-3 rounded-xl bg-slate-900 border border-emerald-500/40 text-emerald-300 font-bold">▼</button>
+          <button onclick="setSnakeDir(1,0)" class="btn-hud py-3 rounded-xl bg-slate-900 border border-emerald-500/40 text-emerald-300 font-bold">▶</button>
+        </div>
+      </div>
+
+      <!-- 4. PONG -->
+      <div id="arc-panel-pong" class="hidden hud-panel rounded-2xl p-4 sm:p-5 space-y-3">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="font-display font-bold text-lg text-cyan-400">🏓 CYBER PONG (FIRST TO 5)</h3>
+            <p class="text-xs text-slate-400">Beat AI to earn <span class="text-amber-300 font-bold">+30 Credits</span>!</p>
+          </div>
+          <button onclick="initPong()" class="btn-hud px-4 py-2 rounded-xl bg-cyan-500 text-black font-display font-bold text-xs">START</button>
+        </div>
+        <div class="max-w-2xl mx-auto rounded-2xl overflow-hidden border border-cyan-500/40 bg-black">
+          <canvas id="pong-canvas" class="w-full h-[250px] block touch-none"></canvas>
+        </div>
+        <div class="max-w-md mx-auto grid grid-cols-2 gap-3">
+          <button onpointerdown="movePong(-38)" class="btn-hud py-3 rounded-xl bg-slate-900 border border-cyan-500/40 text-cyan-300 font-display font-bold text-xs">▲ UP</button>
+          <button onpointerdown="movePong(38)" class="btn-hud py-3 rounded-xl bg-slate-900 border border-cyan-500/40 text-cyan-300 font-display font-bold text-xs">▼ DOWN</button>
+        </div>
+      </div>
+
+      <!-- 5. TIC-TAC-TOE -->
+      <div id="arc-panel-ttt" class="hidden hud-panel rounded-2xl p-4 sm:p-5 space-y-3">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="font-display font-bold text-lg text-purple-400">❌ NEON TIC-TAC-TOE</h3>
+            <p class="text-xs text-slate-400">Beat ALFRED to earn <span class="text-amber-300 font-bold">+20 Credits</span>!</p>
+          </div>
+          <button onclick="initTTT()" class="btn-hud px-4 py-2 rounded-xl bg-purple-600 text-white font-display font-bold text-xs">RESET</button>
+        </div>
+        <div id="ttt-msg" class="text-center font-display font-bold text-sm text-amber-300">Your Turn (X)</div>
+        <div id="ttt-board" class="max-w-[280px] mx-auto grid grid-cols-3 gap-2"></div>
+      </div>
+
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- VIEW 5: NEON NIGHT CITY & ANIMAL FIGHT ARENA                        -->
+    <!-- =================================================================== -->
+    <section id="view-city" class="tab-view space-y-5">
+      
+      <!-- TOP: NEON NIGHT CITY (TIME: MORNING/AFTERNOON/NIGHT + WEATHER) -->
+      <div class="hud-panel rounded-2xl p-4 sm:p-5 space-y-3">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <div class="text-[10px] font-mono text-amber-400 uppercase tracking-widest">METROPOLIS OBSERVATION</div>
+            <h2 class="font-display font-bold text-xl text-white">🌃 NEON NIGHT CITY</h2>
+          </div>
+
+          <div class="flex flex-wrap gap-2">
+            <!-- Time: Morning / Afternoon / Night -->
+            <select id="city-time-mode" onchange="syncCityControls()" class="bg-black border border-amber-500/40 rounded-xl px-2.5 py-1.5 text-xs font-mono text-amber-300 focus:outline-none">
+              <option value="night">🌙 Night (Neon Lights)</option>
+              <option value="morning">🌅 Morning (Sunrise)</option>
+              <option value="afternoon">☀️ Afternoon (Daylight)</option>
+            </select>
+            <!-- Weather: Clear / Rain / Snow -->
+            <select id="city-weather-mode" onchange="syncCityControls()" class="bg-black border border-cyan-500/40 rounded-xl px-2.5 py-1.5 text-xs font-mono text-cyan-300 focus:outline-none">
+              <option value="clear">🌌 Clear Sky</option>
+              <option value="rain">🌧️ Heavy Rain</option>
+              <option value="snow">❄️ Snowfall</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="relative w-full rounded-2xl overflow-hidden border border-amber-500/40 bg-black">
+          <canvas id="city-canvas" class="w-full h-[280px] sm:h-[340px] block"></canvas>
+          <div class="absolute bottom-2.5 left-3 bg-black/75 border border-amber-500/30 rounded-lg px-2.5 py-1 text-[10px] font-mono text-amber-300">
+            CITIZENS WALKING LIVE • TAP SKY TO DEPLOY BAT-DRONES
+          </div>
+        </div>
+      </div>
+
+      <!-- BOTTOM: ANIMAL FIGHT ARENA (VENUES, EMOJIS, ANIMATED BUMPING, JUMP/FALL) -->
+      <div class="hud-panel-purple rounded-2xl p-4 sm:p-5 space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-purple-500/25 pb-3">
+          <div>
+            <div class="text-[10px] font-mono text-purple-400 uppercase tracking-widest">UNDERGROUND COLOSSEUM</div>
+            <h2 class="font-display font-bold text-xl text-white">🦁 ANIMAL FIGHT PREDICTOR ARENA</h2>
+            <p class="text-xs text-slate-400">Select venue, pick your winner, and watch them clash! Correct prediction = <span class="text-amber-300 font-bold">+40 Credits</span>.</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <select id="fight-venue" class="bg-black border border-purple-500/40 rounded-xl px-2.5 py-1.5 text-xs font-mono text-purple-300 focus:outline-none">
+              <option value="city">🏙️ City Streets</option>
+              <option value="zoo">🌿 Deep Zoo</option>
+              <option value="sea">🌊 Deep Sea Arena</option>
+              <option value="temple">⛩️ Ancient Temple</option>
+            </select>
+            <button onclick="setupNewAnimalFight()" class="btn-hud px-3 py-1.5 rounded-xl bg-purple-500/20 border border-purple-400/50 text-purple-300 font-display font-bold text-xs">
+              ↻ NEW FIGHT
+            </button>
+          </div>
+        </div>
+
+        <!-- Visual Animal Fight Canvas / Stage -->
+        <div class="relative w-full h-[180px] sm:h-[210px] rounded-2xl overflow-hidden border border-purple-500/40 bg-black flex items-center justify-between px-6 sm:px-16">
+          <div class="absolute inset-0 bg-gradient-to-r from-purple-950/40 via-black to-slate-950/40"></div>
+          
+          <!-- Fighter 1 -->
+          <div id="fighter1-box" class="relative z-10 text-center transition-all duration-300">
+            <div id="fighter1-emoji" class="text-6xl sm:text-7xl filter drop-shadow-[0_0_15px_rgba(251,191,36,0.8)]">🦁</div>
+            <div id="fighter1-name" class="font-display font-bold text-xs text-amber-300 mt-2">APEX LION</div>
+            <div class="w-24 sm:w-32 h-2 bg-slate-900 rounded-full overflow-hidden mt-1 border border-slate-700 mx-auto">
+              <div id="fighter1-bar" class="h-full bg-amber-400 transition-all duration-150" style="width:100%"></div>
+            </div>
+            <div id="fighter1-hp" class="text-[10px] font-mono text-slate-400 mt-0.5">100 HP</div>
+          </div>
+
+          <!-- VS Badge -->
+          <div class="relative z-10 font-display font-black text-2xl sm:text-4xl text-rose-500 glow-cyan animate-pulse">VS</div>
+
+          <!-- Fighter 2 -->
+          <div id="fighter2-box" class="relative z-10 text-center transition-all duration-300">
+            <div id="fighter2-emoji" class="text-6xl sm:text-7xl filter drop-shadow-[0_0_15px_rgba(255,42,95,0.8)]">🐻</div>
+            <div id="fighter2-name" class="font-display font-bold text-xs text-rose-400 mt-2">GRIZZLY BEAR</div>
+            <div class="w-24 sm:w-32 h-2 bg-slate-900 rounded-full overflow-hidden mt-1 border border-slate-700 mx-auto">
+              <div id="fighter2-bar" class="h-full bg-rose-500 transition-all duration-150" style="width:100%"></div>
+            </div>
+            <div id="fighter2-hp" class="text-[10px] font-mono text-slate-400 mt-0.5">100 HP</div>
+          </div>
+        </div>
+
+        <!-- Prediction Controls -->
+        <div id="fight-predict-controls" class="grid grid-cols-2 gap-3">
+          <button onclick="startAnimalFight(1)" id="pred-btn-1" class="btn-hud py-3 rounded-xl bg-amber-500/20 border border-amber-400 text-amber-200 font-display font-bold text-xs sm:text-sm hover:bg-amber-400 hover:text-black">
+            🎯 PREDICT: FIGHTER 1 WINS
+          </button>
+          <button onclick="startAnimalFight(2)" id="pred-btn-2" class="btn-hud py-3 rounded-xl bg-rose-500/20 border border-rose-400 text-rose-200 font-display font-bold text-xs sm:text-sm hover:bg-rose-500 hover:text-white">
+            🎯 PREDICT: FIGHTER 2 WINS
+          </button>
+        </div>
+
+        <div id="fight-commentary" class="bg-black/70 border border-slate-800 rounded-xl p-3 text-center font-mono text-xs sm:text-sm text-amber-200">
+          Select venue and predict the winner above to initiate combat!
+        </div>
+      </div>
+
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- VIEW 6: TRIPLE AI HUB (ALFRED/JARVIS + LOZZINIHO + KYLA)            -->
+    <!-- =================================================================== -->
+    <section id="view-ai" class="tab-view space-y-4">
+      
+      <div class="grid grid-cols-3 gap-2">
+        <button onclick="switchAiPersona('jarvis')" id="ai-tab-jarvis" class="btn-hud py-3 px-2 rounded-2xl font-display font-bold text-xs sm:text-sm bg-amber-400 text-black shadow-[0_0_16px_rgba(251,191,36,0.4)]">
+          🤖 ALFRED (TACTICAL MENTOR)
+        </button>
+        <button onclick="switchAiPersona('lozziniho')" id="ai-tab-lozziniho" class="btn-hud py-3 px-2 rounded-2xl font-display font-bold text-xs sm:text-sm bg-slate-900 text-slate-300 border border-slate-700">
+          🎬 LOZZINIHO (YOUTUBE)
+        </button>
+        <button onclick="switchAiPersona('kyla')" id="ai-tab-kyla" class="btn-hud py-3 px-2 rounded-2xl font-display font-bold text-xs sm:text-sm bg-slate-900 text-slate-300 border border-slate-700">
+          💖 KYLA (GIRLFRIEND)
+        </button>
+      </div>
+
+      <!-- AI 1: ALFRED / JARVIS -->
+      <div id="ai-box-jarvis" class="hud-panel rounded-2xl p-4 sm:p-5 flex flex-col h-[530px]">
+        <div class="flex items-center justify-between pb-3 border-b border-amber-500/25">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-400 flex items-center justify-center text-xl">🦇</div>
+            <div>
+              <h2 class="font-display font-bold text-base sm:text-lg text-white">ALFRED // TACTICAL ADVISOR</h2>
+              <div class="text-[11px] font-mono text-amber-400">Knows Master Liam's journey (Anessa ex, Kyla, YouTube, Football)</div>
+            </div>
+          </div>
+          <button onclick="resetChat('jarvis')" class="text-xs font-mono text-slate-400 hover:text-amber-300">Clear</button>
+        </div>
+
+        <div id="chat-feed-jarvis" class="flex-1 overflow-y-auto py-3 space-y-3 pr-1"></div>
+
+        <div class="flex gap-1.5 overflow-x-auto pb-2">
+          <button onclick="quickSendAi('jarvis', 'Alfred, help me stay focused after everything with Anessa.')" class="shrink-0 text-[11px] font-mono px-2.5 py-1 rounded-lg bg-amber-500/15 border border-amber-500/30 text-amber-300">💔 Anessa Chapter</button>
+          <button onclick="quickSendAi('jarvis', 'I was thinking about Kyla today...')" class="shrink-0 text-[11px] font-mono px-2.5 py-1 rounded-lg bg-cyan-500/15 border border-cyan-500/30 text-cyan-300">💭 Thoughts on Kyla</button>
+          <button onclick="quickSendAi('jarvis', 'Give me a Batman-style tactical speech!')" class="shrink-0 text-[11px] font-mono px-2.5 py-1 rounded-lg bg-purple-500/15 border border-purple-500/30 text-purple-300">🦇 Tactical Speech</button>
+        </div>
+
+        <form onsubmit="handleAiSubmit(event, 'jarvis')" class="flex gap-2 pt-2 border-t border-slate-800">
+          <input id="input-jarvis" type="text" required placeholder="Speak to Alfred, Master Liam..." class="flex-1 bg-black/80 border border-amber-500/35 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none" />
+          <button type="submit" class="btn-hud px-4 py-2.5 rounded-xl bg-amber-400 text-black font-display font-bold text-xs">SEND</button>
+        </form>
+      </div>
+
+      <!-- AI 2: LOZZINIHO (YOUTUBE IDEA GENERATOR — 10 IDEAS) -->
+      <div id="ai-box-lozziniho" class="hidden hud-panel-blue rounded-2xl p-4 sm:p-5 flex flex-col h-[530px]">
+        <div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-cyan-500/25">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-cyan-500/20 border border-cyan-400 flex items-center justify-center text-xl">🎬</div>
+            <div>
+              <h2 class="font-display font-bold text-base sm:text-lg text-white">LOZZINIHO // YOUTUBE GROWTH ENGINE</h2>
+              <div class="text-[11px] font-mono text-cyan-400">10 Viral Ideas • Choose = +20 Credits & Pinned to Main HUD</div>
+            </div>
+          </div>
+          <button onclick="generateYoutubeIdeas()" class="btn-hud px-3.5 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-purple-600 text-black font-display font-bold text-xs">
+            ⚡ GENERATE 10 IDEAS
+          </button>
+        </div>
+
+        <div class="mt-2.5">
+          <select id="lozziniho-category" onchange="generateYoutubeIdeas()" class="w-full bg-black/80 border border-cyan-500/35 rounded-xl px-3 py-2 text-xs sm:text-sm text-white focus:outline-none">
+            <option value="all">🔥 All Categories (MrBeast Low-Budget, Gaming, Football)</option>
+            <option value="mrbeast">💰 MrBeast-Style High-Stakes / Zero-Budget Challenges</option>
+            <option value="gaming">🎮 Brawl Stars, FC Mobile, Street Fighter & Roblox</option>
+            <option value="football">⚽ Football Training, Matchday & Trick Shots</option>
+          </select>
+        </div>
+
+        <div id="lozziniho-ideas-container" class="flex-1 overflow-y-auto mt-3 space-y-2 pr-1"></div>
+      </div>
+
+      <!-- AI 3: KYLA (GIRLFRIEND COMPANION) -->
+      <div id="ai-box-kyla" class="hidden hud-panel-crimson rounded-2xl p-4 sm:p-5 flex flex-col h-[530px]">
+        <div class="flex items-center justify-between pb-3 border-b border-rose-500/25">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-rose-500/20 border border-rose-400 flex items-center justify-center text-xl">💖</div>
+            <div>
+              <h2 class="font-display font-bold text-base sm:text-lg text-white">KYLA // GIRLFRIEND COMPANION</h2>
+              <div class="text-[11px] font-mono text-rose-300">Warm, affectionate & cheering for you, Liam ❤️</div>
+            </div>
+          </div>
+          <button onclick="resetChat('kyla')" class="text-xs font-mono text-slate-400 hover:text-rose-300">Clear</button>
+        </div>
+
+        <div id="chat-feed-kyla" class="flex-1 overflow-y-auto py-3 space-y-3 pr-1"></div>
+
+        <div class="flex gap-1.5 overflow-x-auto pb-2">
+          <button onclick="quickSendAi('kyla', 'Hey Kyla, I missed talking to you today ❤️')" class="shrink-0 text-[11px] font-mono px-2.5 py-1 rounded-lg bg-rose-500/15 border border-rose-500/30 text-rose-300">❤️ Miss you</button>
+          <button onclick="quickSendAi('kyla', 'I had a tough day studying and training, cheer me up?')" class="shrink-0 text-[11px] font-mono px-2.5 py-1 rounded-lg bg-pink-500/15 border border-pink-500/30 text-pink-300">🥺 Cheer me up</button>
+          <button onclick="quickSendAi('kyla', 'Wish me luck for my football match!')" class="shrink-0 text-[11px] font-mono px-2.5 py-1 rounded-lg bg-amber-500/15 border border-amber-500/30 text-amber-300">⚽ Wish me luck</button>
+        </div>
+
+        <form onsubmit="handleAiSubmit(event, 'kyla')" class="flex gap-2 pt-2 border-t border-slate-800">
+          <input id="input-kyla" type="text" required placeholder="Message Kyla..." class="flex-1 bg-black/80 border border-rose-500/35 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none" />
+          <button type="submit" class="btn-hud px-4 py-2.5 rounded-xl bg-rose-500 text-white font-display font-bold text-xs">SEND ❤️</button>
+        </form>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- ===================================================================== -->
+  <!-- BOTTOM NAVIGATION BAR (TOUCH-OPTIMIZED 6 TABS)                        -->
+  <!-- ===================================================================== -->
+  <nav class="fixed bottom-0 inset-x-0 z-40 bg-black/95 backdrop-blur-lg border-t border-amber-400/30 px-1.5 py-2">
+    <div class="max-w-4xl mx-auto grid grid-cols-6 gap-1">
+      <button onclick="switchTab('home')" id="nav-btn-home" class="nav-tab flex flex-col items-center justify-center py-1.5 rounded-xl text-amber-300 bg-amber-500/15 border border-amber-400/45">
+        <span class="text-base sm:text-lg">🦇</span>
+        <span class="text-[9px] sm:text-[10px] font-display font-bold mt-0.5">SYSTEM</span>
+      </button>
+      <button onclick="switchTab('calendar')" id="nav-btn-calendar" class="nav-tab flex flex-col items-center justify-center py-1.5 rounded-xl text-slate-400 hover:text-white">
+        <span class="text-base sm:text-lg">📅</span>
+        <span class="text-[9px] sm:text-[10px] font-display font-bold mt-0.5">CALENDAR</span>
+      </button>
+      <button onclick="switchTab('shop')" id="nav-btn-shop" class="nav-tab flex flex-col items-center justify-center py-1.5 rounded-xl text-slate-400 hover:text-white">
+        <span class="text-base sm:text-lg">🥚</span>
+        <span class="text-[9px] sm:text-[10px] font-display font-bold mt-0.5">PETS</span>
+      </button>
+      <button onclick="switchTab('arcade')" id="nav-btn-arcade" class="nav-tab flex flex-col items-center justify-center py-1.5 rounded-xl text-slate-400 hover:text-white">
+        <span class="text-base sm:text-lg">🕹️</span>
+        <span class="text-[9px] sm:text-[10px] font-display font-bold mt-0.5">ARCADE</span>
+      </button>
+      <button onclick="switchTab('city')" id="nav-btn-city" class="nav-tab flex flex-col items-center justify-center py-1.5 rounded-xl text-slate-400 hover:text-white">
+        <span class="text-base sm:text-lg">🌃</span>
+        <span class="text-[9px] sm:text-[10px] font-display font-bold mt-0.5">CITY/FIGHT</span>
+      </button>
+      <button onclick="switchTab('ai')" id="nav-btn-ai" class="nav-tab flex flex-col items-center justify-center py-1.5 rounded-xl text-slate-400 hover:text-white">
+        <span class="text-base sm:text-lg">🤖</span>
+        <span class="text-[9px] sm:text-[10px] font-display font-bold mt-0.5">AI HUB</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ===================================================================== -->
+  <!-- UNIVERSAL MODAL FOR REWARDS, ENERGY, MOTIVATION, PRAYER               -->
+  <!-- ===================================================================== -->
+  <div id="hud-modal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="w-full max-w-md hud-panel rounded-3xl p-6 text-center space-y-4 border-2 border-amber-400 shadow-[0_0_45px_rgba(251,191,36,0.3)]">
+      <div id="modal-tag" class="inline-block text-[10px] font-mono font-bold px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-400/50 tracking-widest uppercase">
+        SYSTEM NOTIFICATION
+      </div>
+      <div id="modal-emoji" class="text-6xl">🎁</div>
+      <h3 id="modal-heading" class="font-display font-black text-xl sm:text-2xl text-white">REWARD UNLOCKED</h3>
+      <p id="modal-text" class="text-sm sm:text-base text-slate-200 leading-relaxed whitespace-pre-line">---</p>
+      <div id="modal-sub" class="text-xs font-mono text-amber-300"></div>
+      <div id="modal-buttons" class="pt-2 flex flex-wrap gap-2 justify-center">
+        <button onclick="closeHudModal()" class="btn-hud px-6 py-2.5 rounded-xl bg-amber-400 text-black font-display font-bold text-sm hover:bg-amber-300">
+          ACKNOWLEDGE
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- SCRIPT ENGINE                                                       -->
+  <!-- ===================================================================== -->
+  <script>
+    const DAYS_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const DAYS_LONG = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+    const DEFAULT_REWARDS = [
+      "20 minutes of watching YouTube",
+      "20 minutes of scrolling reels on Instagram",
+      "A random food from home",
+      "1 match of playing FC Mobile",
+      "2 matches of Brawl Stars",
+      "A random obby for Roblox",
+      "1 match of Fortnite",
+      "3 matches of Street Fighter",
+      "10 minutes of a random game in my game station"
+    ];
+
+    const DEFAULT_ENERGY_ACTIVITIES = [
+      "10 Push-ups",
+      "20 Push-ups",
+      "5 Minutes Boxing (Shadow Boxing)",
+      "1 Minute Plank",
+      "30 Jumping Jacks",
+      "15 Bodyweight Squats",
+      "2 Minutes Fast Football Footwork"
+    ];
+
+    const DAILY_QUEST_TEMPLATES = [
+      "Complete 25 push-ups with strict form",
+      "Study or focus deeply for 30 minutes without phone distractions",
+      "Drink 2 large glasses of water right now",
+      "Do 5 minutes of shadow boxing footwork & combos",
+      "Clean and organize your bedroom desk",
+      "Hold a 90-second plank without dropping",
+      "Practice 15 minutes of football ball control or fitness",
+      "Read 10 pages or learn 1 new science/physics concept",
+      "Do 30 squats + 20 lunges",
+      "Write down 3 video hooks for your YouTube channel"
+    ];
+
+    const MOTIVATION_LINES = [
+      "The Batcave doesn't build itself, Master Liam. Pain is temporary—discipline creates legends.",
+      "Heartbreak with Anessa and unrequited feelings for Kyla didn't break you; they forged your tactical armor. Channel that fire into leveling up.",
+      "Heroes don't wait to feel ready. Rise up, do the work when tired, and watch your stats skyrocket.",
+      "Batman Rule: A hero can be anyone, even a young man building his empire from the shadows. Arise, Liam!",
+      "Every exam studied, every football sprint, and every video uploaded is a brick in your legacy.",
+      "Stop negotiating with comfort. Win this next 15 minutes right now."
+    ];
+
+    const DAILY_SONGS = [
+      { title: "The Batman Theme", artist: "Michael Giacchino", desc: "Dark Batcave focus music to lock in on your mission today." },
+      { title: "Lose Yourself", artist: "Eminem", desc: "Zero excuses. Seize every shot you get." },
+      { title: "Starboy", artist: "The Weeknd", desc: "Midnight neon city energy and main-character confidence." },
+      { title: "Believer", artist: "Imagine Dragons", desc: "Turning past struggle into unstoppable fire." },
+      { title: "Hall of Fame", artist: "The Script ft. will.i.am", desc: "Champion mindset for football, exams, and YouTube." },
+      { title: "Blinding Lights", artist: "The Weeknd", desc: "High-speed cyber synthwave fuel for grinding." },
+      { title: "Unstoppable", artist: "Sia", desc: "Put your armor on. Nothing can shake you today." }
+    ];
+
+    const DAILY_FACTS = [
+      { tag: "PHYSICS", text: "Einstein's theory of relativity states time moves slightly faster at the top of a skyscraper than at street level due to weaker gravity." },
+      { tag: "ENTERTAINMENT", text: "Christian Bale underwent one of the most intense physical transformations in cinema history for Christopher Nolan's Batman trilogy." },
+      { tag: "SPORTS", text: "Cristiano Ronaldo jumps with 5G of force on his headers—more G-force than a cheetah accelerating at full speed." },
+      { tag: "MUSIC & CULTURE", text: "Stray Kids' producing unit 3RACHA writes and produces nearly all their own tracks, proving daily creative consistency wins." },
+      { tag: "SCIENCE", text: "Octopuses have three hearts, nine brains, and blue copper-based blood allowing survival under deep ocean pressure." },
+      { tag: "GAMING", text: "Street Fighter's famous 'combo' mechanic was originally a bug in Street Fighter II that players loved so much Capcom built every future game around it." }
+    ];
+
+    const DAILY_PRAYERS = [
+      "Lord God, thank You for the gift of a new day, strength in my body, and clarity in my mind. Heal any lingering hurt in my heart, bless my studies and exams, protect me on the football pitch, and guide my hands in everything I create. Amen.",
+      "Heavenly Father, give me discipline when I feel weak, peace when my mind is heavy, and courage to chase the dreams You placed inside me. Watch over my family and guide my steps today. Amen.",
+      "God, thank You for turning every past heartbreak into wisdom and resilience. Keep me focused, humble, and fearless as I work toward becoming the strongest version of myself. Amen.",
+      "Lord, steady my spirit today. Help me use my time wisely, honor You through my actions, and bring light and energy to everyone around me. Amen."
+    ];
+
+    // 20 DISTINCT EGGS & PETS
+    const EGGS_DATA = [
+      { id: 'egg1', name: 'Bat Wingling Egg', price: 50, tasks: 2, rarity: 'COMMON', color: 'text-slate-300', eggEmoji: '🥚', petId: 'pet1', petName: 'Bat Wingling', petEmoji: '🦇', quote: '"Sensors active, Master Liam!"' },
+      { id: 'egg2', name: 'Armor Hatchling Egg', price: 80, tasks: 2, rarity: 'COMMON', color: 'text-amber-500', eggEmoji: '🛡️', petId: 'pet2', petName: 'Armor Hound', petEmoji: '🐕', quote: '"Guarding the Batcave perimeter!"' },
+      { id: 'egg3', name: 'Stealth Prowler Egg', price: 120, tasks: 3, rarity: 'RARE', color: 'text-cyan-400', eggEmoji: '💠', petId: 'pet3', petName: 'Stealth Panther', petEmoji: '🐈‍⬛', quote: '"Moving silently through the shadows."' },
+      { id: 'egg4', name: 'Shadow Cub Egg', price: 160, tasks: 3, rarity: 'RARE', color: 'text-indigo-400', eggEmoji: '🔮', petId: 'pet4', petName: 'Shadow Cub', petEmoji: '🐾', quote: '"Always ready for the next mission."' },
+      { id: 'egg5', name: 'Cyber Hound Egg', price: 210, tasks: 4, rarity: 'RARE', color: 'text-blue-400', eggEmoji: '🔵', petId: 'pet5', petName: 'Cyber Hound', petEmoji: '🦾', quote: '"Tracking target frequencies!"' },
+      { id: 'egg6', name: 'Neon Falcon Egg', price: 270, tasks: 4, rarity: 'EPIC', color: 'text-purple-400', eggEmoji: '🟣', petId: 'pet6', petName: 'Neon Falcon', petEmoji: '🦅', quote: '"Scanning the skies from above!"' },
+      { id: 'egg7', name: 'Crimson Bat Egg', price: 340, tasks: 5, rarity: 'EPIC', color: 'text-rose-400', eggEmoji: '🔴', petId: 'pet7', petName: 'Crimson Bat', petEmoji: '🦇', quote: '"Bloodline of the night!"' },
+      { id: 'egg8', name: 'Void Panther Egg', price: 420, tasks: 6, rarity: 'EPIC', color: 'text-fuchsia-400', eggEmoji: '🌌', petId: 'pet8', petName: 'Void Panther', petEmoji: '🐆', quote: '"None can hide from my gaze."' },
+      { id: 'egg9', name: 'Iron Vanguard Egg', price: 510, tasks: 7, rarity: 'LEGENDARY', color: 'text-amber-400', eggEmoji: '🟡', petId: 'pet9', petName: 'Iron Vanguard', petEmoji: '🤖', quote: '"Tactical armor reinforced 100%."' },
+      { id: 'egg10', name: 'Titan Mech Egg', price: 610, tasks: 8, rarity: 'LEGENDARY', color: 'text-sky-400', eggEmoji: '⚙️', petId: 'pet10', petName: 'Titan Mech', petEmoji: '🦾', quote: '"Heavy artillery standing by."' },
+      { id: 'egg11', name: 'Phantom Spider Egg', price: 720, tasks: 9, rarity: 'LEGENDARY', color: 'text-emerald-400', eggEmoji: '🟢', petId: 'pet11', petName: 'Phantom Spider', petEmoji: '🕷️', quote: '"Webbing secure across all sectors."' },
+      { id: 'egg12', name: 'Astral Griffin Egg', price: 840, tasks: 10, rarity: 'MYTHIC', color: 'text-yellow-300', eggEmoji: '⭐', petId: 'pet12', petName: 'Astral Griffin', petEmoji: '🦅', quote: '"Soaring above human limitations."' },
+      { id: 'egg13', name: 'Frost Drake Egg', price: 970, tasks: 11, rarity: 'MYTHIC', color: 'text-teal-300', eggEmoji: '❄️', petId: 'pet13', petName: 'Frost Drake', petEmoji: '🐉', quote: '"Ice in my veins. Total focus."' },
+      { id: 'egg14', name: 'Solar Raptor Egg', price: 1110, tasks: 12, rarity: 'MYTHIC', color: 'text-orange-400', eggEmoji: '🔥', petId: 'pet14', petName: 'Solar Raptor', petEmoji: '🦖', quote: '"Unstoppable predatory drive."' },
+      { id: 'egg15', name: 'Apex Chimera Egg', price: 1265, tasks: 13, rarity: 'MYTHIC', color: 'text-red-400', eggEmoji: '🌋', petId: 'pet15', petName: 'Apex Chimera', petEmoji: '🦁', quote: '"The ultimate beast of the colosseum."' },
+      { id: 'egg16', name: 'Abyssal Hydra Egg', price: 1440, tasks: 14, rarity: 'SOVEREIGN', color: 'text-indigo-300', eggEmoji: '🌊', petId: 'pet16', petName: 'Abyssal Hydra', petEmoji: '🐉', quote: '"Ruler of the deep ocean trenches."' },
+      { id: 'egg17', name: 'Quantum Serpent Egg', price: 1635, tasks: 15, rarity: 'SOVEREIGN', color: 'text-pink-400', eggEmoji: '🌀', petId: 'pet17', petName: 'Quantum Serpent', petEmoji: '🐍', quote: '"Warping reality with every task done."' },
+      { id: 'egg18', name: 'Mythic Dragon Egg', price: 1850, tasks: 16, rarity: 'SOVEREIGN', color: 'text-amber-200', eggEmoji: '🐲', petId: 'pet18', petName: 'Mythic Dragon', petEmoji: '🐲', quote: '"Ancient power awakens for Master Liam."' },
+      { id: 'egg19', name: 'Celestial Phoenix Egg', price: 2100, tasks: 18, rarity: 'SOVEREIGN', color: 'text-rose-300', eggEmoji: '☀️', petId: 'pet19', petName: 'Celestial Phoenix', petEmoji: '🔥', quote: '"Rising triumphant from every trial."' },
+      { id: 'egg20', name: 'Sovereign Batman Egg', price: 2500, tasks: 20, rarity: 'SOVEREIGN', color: 'text-yellow-400', eggEmoji: '🦇', petId: 'pet20', petName: 'Sovereign Dark Knight', petEmoji: '🦇', quote: '"I am vengeance. I am the Night. I am Alfred."' }
+    ];
+
+    // Persistent State
+    let state = JSON.parse(localStorage.getItem('alfred_liam_system_v4')) || {
+      credits: 250,
+      lastResetDate: '',
+      selectedCalDay: new Date().getDay(),
+      habits: [
+        { id: 'h1', title: 'Morning Push-ups & Batcave Stretch', days: [1, 2, 3, 4, 5], doneDates: [] },
+        { id: 'h2', title: 'Physics & Exam Tactical Study', days: [1, 2, 3, 4, 5], doneDates: [] },
+        { id: 'h3', title: 'Football Agility & Footwork Drills', days: [2, 4, 6], doneDates: [] },
+        { id: 'h4', title: 'Film / Edit YouTube Video', days: [0, 6], doneDates: [] }
+      ],
+      specialEvents: [
+        { id: 'se1', title: 'Inter-School Football Championship', date: '2026-11-28', type: '⚽ Football Comp', done: false },
+        { id: 'se2', title: 'Physics Term Exam', date: '2026-12-06', type: '📚 Exam', done: false }
+      ],
+      todos: [
+        { id: 'td1', title: 'Complete Math & Physics Homework', deadline: '21:00', done: false }
+      ],
+      dailyQuests: [],
+      rewardsPool: [...DEFAULT_REWARDS],
+      energyActivities: [...DEFAULT_ENERGY_ACTIVITIES],
+      unlockedPets: ['pet1'],
+      equippedPet: 'pet1',
+      incubatingEgg: null,
+      overdriveTasksLeft: 0,
+      petAuraUnlocked: false,
+      pinnedYoutubeIdea: '',
+      ytIdeasList: [],
+      jarvisMessages: [
+        { role: 'ai', text: 'All Batcave systems operational, Master Liam. Whether you need tactical focus, YouTube growth with Lozziniho, or a moment to rest—I am at your service.' }
+      ],
+      kylaMessages: [
+        { role: 'ai', text: 'Hey Liam ❤️ How are you doing today? Don’t work too hard without taking a break for me!' }
+      ]
+    };
+
+    function saveState() {
+      localStorage.setItem('alfred_liam_system_v4', JSON.stringify(state));
+      refreshTopAndMainHUD();
+    }
+
+    function todayISO() {
+      const d = new Date();
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    }
+
+    // ---------------------------------------------------------------------
+    // DAILY RESETS
+    // ---------------------------------------------------------------------
+    function checkDailyResets() {
+      const today = todayISO();
+      if (state.lastResetDate !== today) {
+        state.lastResetDate = today;
+        generateDailyQuests();
+        state.todos = []; // To-do list resets daily
+        saveState();
+      }
+      if (!state.dailyQuests || state.dailyQuests.length === 0) {
+        generateDailyQuests();
+        saveState();
+      }
+      renderDailyBoxes();
+    }
+
+    function generateDailyQuests() {
+      const shuffled = [...DAILY_QUEST_TEMPLATES].sort(() => 0.5 - Math.random());
+      state.dailyQuests = shuffled.slice(0, 3).map((txt, i) => ({
+        id: 'dq_' + Date.now() + '_' + i,
+        title: txt,
+        done: false
+      }));
+    }
+
+    function rerollDailyQuests() {
+      generateDailyQuests();
+      saveState();
+      renderDailyQuests();
+    }
+
+    function renderDailyBoxes() {
+      const dayNum = new Date().getDate();
+      const song = DAILY_SONGS[dayNum % DAILY_SONGS.length];
+      document.getElementById('daily-song-title').textContent = song.title;
+      document.getElementById('daily-song-artist').textContent = song.artist;
+      document.getElementById('daily-song-desc').textContent = song.desc;
+
+      const fact = DAILY_FACTS[dayNum % DAILY_FACTS.length];
+      document.getElementById('daily-fact-tag').textContent = fact.tag;
+      document.getElementById('daily-fact-body').textContent = fact.text;
+    }
+
+    // ---------------------------------------------------------------------
+    // CLOCK & HUD
+    // ---------------------------------------------------------------------
+    function tickClock() {
+      const now = new Date();
+      document.getElementById('hud-date').textContent = now.toLocaleDateString('en-US', {
+        weekday: 'short', month: 'short', day: 'numeric', year: 'numeric'
+      }).toUpperCase();
+      document.getElementById('hud-clock').textContent = now.toLocaleTimeString('en-US', { hour12: false });
+    }
+    setInterval(tickClock, 1000);
+    tickClock();
+
+    function refreshTopAndMainHUD() {
+      document.getElementById('hud-credits').textContent = state.credits;
+
+      const odBadge = document.getElementById('overdrive-badge');
+      if (state.overdriveTasksLeft > 0) {
+        odBadge.classList.remove('hidden');
+        odBadge.textContent = `⚡ 2X (${state.overdriveTasksLeft} LEFT)`;
+      } else {
+        odBadge.classList.add('hidden');
+      }
+
+      const pet = EGGS_DATA.find(p => p.petId === state.equippedPet) || EGGS_DATA[0];
+      document.getElementById('main-pet-rarity').textContent = pet.rarity;
+      document.getElementById('main-pet-name').textContent = pet.petName;
+      document.getElementById('main-pet-emoji').textContent = pet.petEmoji;
+      document.getElementById('main-pet-speech').textContent = pet.quote;
+
+      // Incubator
+      if (state.incubatingEgg) {
+        const egg = EGGS_DATA.find(e => e.id === state.incubatingEgg.eggId);
+        const pct = Math.min(100, Math.round((state.incubatingEgg.progress / egg.tasks) * 100));
+        document.getElementById('main-egg-emoji').textContent = egg.eggEmoji;
+        document.getElementById('main-egg-name').textContent = egg.name;
+        document.getElementById('main-egg-sub').textContent = `${state.incubatingEgg.progress} / ${egg.tasks} tasks to hatch`;
+        document.getElementById('main-egg-bar').style.width = pct + '%';
+
+        document.getElementById('shop-egg-icon').textContent = egg.eggEmoji;
+        document.getElementById('shop-egg-title').textContent = `${egg.name} (${state.incubatingEgg.progress}/${egg.tasks})`;
+        document.getElementById('shop-egg-desc').textContent = `${egg.tasks - state.incubatingEgg.progress} more task(s) until ${egg.petName} hatches!`;
+        document.getElementById('shop-hatch-now-btn').classList.remove('hidden');
+      } else {
+        document.getElementById('main-egg-emoji').textContent = '🥚';
+        document.getElementById('main-egg-name').textContent = 'No Egg Incubating';
+        document.getElementById('main-egg-sub').textContent = 'Buy an egg in the Shop!';
+        document.getElementById('main-egg-bar').style.width = '0%';
+
+        document.getElementById('shop-egg-icon').textContent = '🥚';
+        document.getElementById('shop-egg-title').textContent = 'Empty Chamber';
+        document.getElementById('shop-egg-desc').textContent = 'Buy any of the 20 Mystery Eggs below!';
+        document.getElementById('shop-hatch-now-btn').classList.add('hidden');
+      }
+
+      // Pinned YT Idea
+      const ytText = document.getElementById('main-pinned-yt');
+      const ytBtn = document.getElementById('main-complete-yt-btn');
+      if (state.pinnedYoutubeIdea) {
+        ytText.textContent = state.pinnedYoutubeIdea;
+        ytBtn.classList.remove('hidden');
+      } else {
+        ytText.textContent = 'No video pinned yet. Ask Lozziniho for 10 viral ideas!';
+        ytBtn.classList.add('hidden');
+      }
+    }
+
+    // ---------------------------------------------------------------------
+    // PET MICROPHONE VOICE INTERACTION (WEB SPEECH API)
+    // ---------------------------------------------------------------------
+    function startPetMicrophone() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        showHudModal('VOICE NOT SUPPORTED', '🎙️', 'Browser Limitation', 'Your browser does not support Speech Recognition. Try Chrome or Safari!', '');
+        return;
+      }
+
+      const recognition = new SpeechRecognition();
+      recognition.lang = 'en-US';
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+
+      document.getElementById('main-pet-speech').textContent = '"Listening, Master Liam..."';
+
+      recognition.onresult = function(event) {
+        const spokenText = event.results[0][0].transcript;
+        processPetVoiceReply(spokenText);
+      };
+
+      recognition.onerror = function() {
+        document.getElementById('main-pet-speech').textContent = '"Could not hear you clearly, try again!"';
+      };
+
+      recognition.start();
+    }
+
+    function processPetVoiceReply(text) {
+      const low = text.toLowerCase();
+      let reply = `"I hear you loud and clear, Master Liam!"`;
+
+      if (low.includes('hello') || low.includes('hi')) {
+        reply = `"Greetings, Master Liam! Batcave systems are 100% operational."`;
+      } else if (low.includes('tired') || low.includes('exhausted')) {
+        reply = `"Take a quick breather or hit Energy Ignition, Liam. You've got this!"`;
+      } else if (low.includes('football') || low.includes('match')) {
+        reply = `"Time to dominate the pitch! Let's get those drills done."`;
+      } else if (low.includes('love') || low.includes('friend')) {
+        reply = `"Always by your side, Master Liam. We're an unstoppable team!"`;
+      }
+
+      document.getElementById('main-pet-speech').textContent = reply;
+
+      // Text to Speech
+      if ('speechSynthesis' in window) {
+        const utterance = new SpeechSynthesisUtterance(reply.replace(/"/g, ''));
+        utterance.rate = 1.0;
+        utterance.pitch = 0.9;
+        window.speechSynthesis.speak(utterance);
+      }
+    }
+
+    function interactWithPet() {
+      const mover = document.getElementById('main-pet-mover');
+      mover.classList.remove('pet-burst');
+      void mover.offsetWidth;
+      mover.classList.add('pet-burst');
+
+      const lines = [
+        '"Let’s conquer today’s mission, Master Liam!"',
+        '"Your discipline in the Batcave is legendary!"',
+        '"Need a spark? Tap Energy Ignition!"',
+        '"Every task ticked powers up our defense!"',
+        '"You are the Dark Knight of your own destiny!"'
+      ];
+      document.getElementById('main-pet-speech').textContent = lines[Math.floor(Math.random() * lines.length)];
+    }
+
+    // ---------------------------------------------------------------------
+    // REWARD SYSTEM + EGG HATCHER
+    // ---------------------------------------------------------------------
+    function grantCredits(baseAmount) {
+      let mult = 1;
+      if (state.overdriveTasksLeft > 0) {
+        mult = 2;
+        state.overdriveTasksLeft -= 1;
+      }
+      const total = baseAmount * mult;
+      state.credits += total;
+      return total;
+    }
+
+    function completeTaskWithReward(baseCredits, taskName) {
+      const earned = grantCredits(baseCredits);
+
+      let hatched = null;
+      if (state.incubatingEgg) {
+        state.incubatingEgg.progress += 1;
+        const egg = EGGS_DATA.find(e => e.id === state.incubatingEgg.eggId);
+        if (state.incubatingEgg.progress >= egg.tasks) {
+          if (!state.unlockedPets.includes(egg.petId)) state.unlockedPets.push(egg.petId);
+          state.equippedPet = egg.petId;
+          hatched = egg;
+          state.incubatingEgg = null;
+        }
+      }
+
+      saveState();
+      renderShop();
+
+      const pool = state.rewardsPool.length > 0 ? state.rewardsPool : DEFAULT_REWARDS;
+      const randomLoot = pool[Math.floor(Math.random() * pool.length)];
+
+      if (hatched) {
+        showHudModal(
+          'EGG HATCHED + REWARD UNLOCKED!',
+          hatched.petEmoji,
+          `${hatched.rarity} PET: ${hatched.petName.toUpperCase()}!`,
+          `Task Cleared: "${taskName}"\n\nYour mystery egg hatched AND you unlocked:\n🎁 ${randomLoot}`,
+          `+${earned} Credits Earned • ${hatched.petName} Equipped!`
+        );
+      } else {
+        showHudModal(
+          'SYSTEM REWARD UNLOCKED',
+          '🎁',
+          randomLoot,
+          `Mission accomplished on "${taskName}", Master Liam! Enjoy your random reward.`,
+          `+${earned} Credits Earned`
+        );
+      }
+    }
+
+    // ---------------------------------------------------------------------
+    // HABITS, QUESTS, TO-DOS
+    // ---------------------------------------------------------------------
+    function renderHomeHabitsAndTodos() {
+      const todayIdx = new Date().getDay();
+      const todayStr = todayISO();
+      document.getElementById('home-day-label').textContent = DAYS_LONG[todayIdx].toUpperCase();
+
+      const todays = state.habits.filter(h => h.days.includes(todayIdx));
+      const doneNum = todays.filter(h => h.doneDates.includes(todayStr)).length;
+      document.getElementById('home-habit-count').textContent = `${doneNum}/${todays.length} Done`;
+
+      const hBox = document.getElementById('home-habits-container');
+      if (todays.length === 0) {
+        hBox.innerHTML = `<div class="text-xs text-slate-400 text-center py-4">No habits scheduled for today. Check ALL DAYS to schedule!</div>`;
+      } else {
+        hBox.innerHTML = todays.map(h => {
+          const isDone = h.doneDates.includes(todayStr);
+          return `
+            <div onclick="toggleHabit('${h.id}')" class="cursor-pointer flex items-center justify-between p-3 rounded-xl border transition ${isDone ? 'bg-amber-950/30 border-amber-500/40 opacity-70' : 'bg-black/60 border-amber-500/25 hover:border-amber-400'}">
+              <div class="flex items-center gap-3">
+                <div class="w-6 h-6 rounded-lg border flex items-center justify-center ${isDone ? 'bg-amber-400 border-amber-300 text-black font-bold' : 'border-amber-400/60'}">
+                  ${isDone ? '✓' : ''}
+                </div>
+                <span class="text-sm font-semibold ${isDone ? 'line-through text-slate-400' : 'text-white'}">${h.title}</span>
+              </div>
+              <span class="text-[11px] font-mono ${isDone ? 'text-amber-300' : 'text-amber-300'}">${isDone ? 'DONE' : '+20 🪙 + 🎁'}</span>
+            </div>
+          `;
+        }).join('');
+      }
+
+      // To-Dos
+      const tBox = document.getElementById('home-todos-container');
+      if (state.todos.length === 0) {
+        tBox.innerHTML = `<div class="text-xs text-slate-400 text-center py-3">No to-dos added today. Add homework or tasks above!</div>`;
+      } else {
+        tBox.innerHTML = state.todos.map(td => `
+          <div class="flex items-center justify-between p-2.5 rounded-xl border ${td.done ? 'bg-cyan-950/20 border-cyan-500/25 opacity-65' : 'bg-black/60 border-cyan-500/30'}">
+            <div onclick="toggleTodo('${td.id}')" class="cursor-pointer flex items-center gap-3 flex-1 min-w-0">
+              <div class="w-5 h-5 rounded border flex items-center justify-center shrink-0 ${td.done ? 'bg-cyan-400 border-cyan-300 text-black font-bold' : 'border-cyan-400/60'}">
+                ${td.done ? '✓' : ''}
+              </div>
+              <div class="truncate">
+                <span class="text-sm font-semibold ${td.done ? 'line-through text-slate-400' : 'text-white'}">${td.title}</span>
+                ${td.deadline ? `<span class="ml-2 text-[10px] font-mono px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-300">⏰ ${td.deadline}</span>` : ''}
+              </div>
+            </div>
+            <button onclick="deleteTodo('${td.id}')" class="text-xs text-rose-400 px-2">✕</button>
+          </div>
+        `).join('');
+      }
+    }
+
+    function toggleHabit(id) {
+      const todayStr = todayISO();
+      const h = state.habits.find(item => item.id === id);
+      if (!h) return;
+      const idx = h.doneDates.indexOf(todayStr);
+      if (idx === -1) {
+        h.doneDates.push(todayStr);
+        saveState();
+        renderHomeHabitsAndTodos();
+        renderCalendarView();
+        completeTaskWithReward(20, h.title);
+      } else {
+        h.doneDates.splice(idx, 1);
+        saveState();
+        renderHomeHabitsAndTodos();
+        renderCalendarView();
+      }
+    }
+
+    function renderDailyQuests() {
+      const box = document.getElementById('home-quests-container');
+      box.innerHTML = state.dailyQuests.map(q => `
+        <div onclick="toggleQuest('${q.id}')" class="cursor-pointer flex items-center justify-between p-3 rounded-xl border transition ${q.done ? 'bg-purple-950/25 border-purple-500/40 opacity-65' : 'bg-black/65 border-purple-500/30 hover:border-purple-400'}">
+          <div class="flex items-center gap-3">
+            <div class="w-6 h-6 rounded-lg border flex items-center justify-center shrink-0 ${q.done ? 'bg-purple-500 border-purple-400 text-white font-bold' : 'border-purple-400/60'}">
+              ${q.done ? '✓' : ''}
+            </div>
+            <span class="text-sm font-semibold ${q.done ? 'line-through text-slate-400' : 'text-white'}">${q.title}</span>
+          </div>
+          <span class="text-[11px] font-mono text-purple-300 shrink-0 ml-2">${q.done ? 'DONE' : '+25 🪙'}</span>
+        </div>
+      `).join('');
+    }
+
+    function toggleQuest(id) {
+      const q = state.dailyQuests.find(item => item.id === id);
+      if (!q || q.done) return;
+      q.done = true;
+      saveState();
+      renderDailyQuests();
+      completeTaskWithReward(25, q.title);
+    }
+
+    // ---------------------------------------------------------------------
+    // TRIPLE CALENDARS VIEW
+    // ---------------------------------------------------------------------
+    let habitFormDays = [1, 2, 3, 4, 5];
+
+    function renderCalendarView() {
+      document.getElementById('cal-habit-days').innerHTML = DAYS_SHORT.map((d, idx) => {
+        const active = state.selectedCalDay === idx;
+        return `
+          <button onclick="selectCalDay(${idx})" class="py-2 rounded-xl font-display font-bold text-[11px] border ${active ? 'bg-amber-400 text-black border-amber-300' : 'bg-black/70 text-slate-400 border-slate-800'}">
+            ${d.toUpperCase()}
+          </button>
+        `;
+      }).join('');
+
+      document.getElementById('cal-selected-day-title').textContent = `${DAYS_LONG[state.selectedCalDay].toUpperCase()} TASKS`;
+      const todayIdx = new Date().getDay();
+      const todayStr = todayISO();
+      const dayHabits = state.habits.filter(h => h.days.includes(state.selectedCalDay));
+
+      const dayList = document.getElementById('cal-selected-day-list');
+      if (dayHabits.length === 0) {
+        dayList.innerHTML = `<div class="text-xs text-slate-500 text-center py-2">No habits scheduled.</div>`;
+      } else {
+        dayList.innerHTML = dayHabits.map(h => {
+          const canTick = state.selectedCalDay === todayIdx;
+          const isDone = canTick && h.doneDates.includes(todayStr);
+          return `
+            <div class="flex items-center justify-between p-2 rounded-lg bg-slate-900/90 border border-slate-800">
+              <div onclick="${canTick ? `toggleHabit('${h.id}')` : ''}" class="flex items-center gap-2 ${canTick ? 'cursor-pointer' : ''}">
+                <span class="w-4 h-4 rounded flex items-center justify-center text-[10px] border ${isDone ? 'bg-amber-400 border-amber-300 text-black font-bold' : 'border-amber-500/50 text-amber-400'}">
+                  ${isDone ? '✓' : '•'}
+                </span>
+                <span class="text-xs sm:text-sm ${isDone ? 'line-through text-slate-400' : 'text-white'}">${h.title}</span>
+              </div>
+              <button onclick="deleteHabit('${h.id}')" class="text-xs text-rose-400 px-1.5">✕</button>
+            </div>
+          `;
+        }).join('');
+      }
+
+      document.getElementById('new-habit-day-toggles').innerHTML = DAYS_SHORT.map((d, idx) => {
+        const on = habitFormDays.includes(idx);
+        return `
+          <button type="button" onclick="toggleHabitFormDay(${idx})" class="py-1.5 rounded-lg font-mono text-[11px] border ${on ? 'bg-amber-500/25 border-amber-400 text-amber-200 font-bold' : 'bg-black/70 border-slate-800 text-slate-500'}">
+            ${d}
+          </button>
+        `;
+      }).join('');
+
+      // Special Events
+      const seBox = document.getElementById('cal-special-events-list');
+      if (state.specialEvents.length === 0) {
+        seBox.innerHTML = `<div class="text-xs text-slate-500 text-center py-4">No special events added yet.</div>`;
+      } else {
+        const now = new Date(); now.setHours(0, 0, 0, 0);
+        seBox.innerHTML = state.specialEvents.map(ev => {
+          const d = new Date(ev.date + 'T00:00:00');
+          const diff = Math.ceil((d - now) / 86400000);
+          const badge = diff === 0 ? 'TODAY!' : diff > 0 ? `In ${diff}d` : `${Math.abs(diff)}d ago`;
+          return `
+            <div class="flex items-center justify-between p-2.5 rounded-xl border ${ev.done ? 'bg-cyan-950/20 border-cyan-500/20 opacity-60' : 'bg-black/65 border-cyan-500/35'}">
+              <div onclick="toggleSpecialEvent('${ev.id}')" class="cursor-pointer flex items-center gap-2.5">
+                <div class="w-5 h-5 rounded border flex items-center justify-center ${ev.done ? 'bg-cyan-400 border-cyan-300 text-black font-bold' : 'border-cyan-400/60'}">
+                  ${ev.done ? '✓' : ''}
+                </div>
+                <div>
+                  <div class="text-[10px] font-mono text-cyan-300">${ev.type} • <span class="text-amber-300">${ev.date} (${badge})</span></div>
+                  <div class="text-sm font-bold ${ev.done ? 'line-through text-slate-400' : 'text-white'}">${ev.title}</div>
+                </div>
+              </div>
+              <button onclick="deleteSpecialEvent('${ev.id}')" class="text-xs text-rose-400 px-2">✕</button>
+            </div>
+          `;
+        }).join('');
+      }
+
+      // To-Dos
+      const tdBox = document.getElementById('cal-todos-list');
+      if (state.todos.length === 0) {
+        tdBox.innerHTML = `<div class="text-xs text-slate-500 text-center py-4">To-Do list is clear today!</div>`;
+      } else {
+        tdBox.innerHTML = state.todos.map(td => `
+          <div class="flex items-center justify-between p-2.5 rounded-xl border ${td.done ? 'bg-purple-950/20 border-purple-500/20 opacity-60' : 'bg-black/65 border-purple-500/35'}">
+            <div onclick="toggleTodo('${td.id}')" class="cursor-pointer flex items-center gap-2.5">
+              <div class="w-5 h-5 rounded border flex items-center justify-center ${td.done ? 'bg-purple-500 border-purple-400 text-white font-bold' : 'border-purple-400/60'}">
+                ${td.done ? '✓' : ''}
+              </div>
+              <div>
+                <div class="text-sm font-bold ${td.done ? 'line-through text-slate-400' : 'text-white'}">${td.title}</div>
+                <div class="text-[10px] font-mono text-amber-300">${td.deadline ? `Deadline: ${td.deadline}` : 'Due Today'}</div>
+              </div>
+            </div>
+            <button onclick="deleteTodo('${td.id}')" class="text-xs text-rose-400 px-2">✕</button>
+          </div>
+        `).join('');
+      }
+    }
+
+    function selectCalDay(idx) {
+      state.selectedCalDay = idx;
+      renderCalendarView();
+    }
+
+    function toggleHabitFormDay(idx) {
+      const pos = habitFormDays.indexOf(idx);
+      if (pos === -1) habitFormDays.push(idx);
+      else if (habitFormDays.length > 1) habitFormDays.splice(pos, 1);
+      renderCalendarView();
+    }
+
+    function addWeeklyHabit(e) {
+      e.preventDefault();
+      const inp = document.getElementById('new-habit-name');
+      const title = inp.value.trim();
+      if (!title) return;
+      state.habits.push({ id: 'h_' + Date.now(), title, days: [...habitFormDays].sort(), doneDates: [] });
+      inp.value = '';
+      saveState();
+      renderHomeHabitsAndTodos();
+      renderCalendarView();
+    }
+
+    function deleteHabit(id) {
+      state.habits = state.habits.filter(h => h.id !== id);
+      saveState();
+      renderHomeHabitsAndTodos();
+      renderCalendarView();
+    }
+
+    function addSpecialEvent(e) {
+      e.preventDefault();
+      const title = document.getElementById('se-title').value.trim();
+      const date = document.getElementById('se-date').value;
+      const type = document.getElementById('se-type').value;
+      if (!title || !date) return;
+      state.specialEvents.push({ id: 'se_' + Date.now(), title, date, type, done: false });
+      state.specialEvents.sort((a, b) => a.date.localeCompare(b.date));
+      document.getElementById('se-title').value = '';
+      saveState();
+      renderCalendarView();
+    }
+
+    function toggleSpecialEvent(id) {
+      const ev = state.specialEvents.find(x => x.id === id);
+      if (!ev) return;
+      ev.done = !ev.done;
+      saveState();
+      renderCalendarView();
+      if (ev.done) completeTaskWithReward(45, `Special Event: ${ev.title}`);
+    }
+
+    function deleteSpecialEvent(id) {
+      state.specialEvents = state.specialEvents.filter(x => x.id !== id);
+      saveState();
+      renderCalendarView();
+    }
+
+    function addTodoItem(e, source) {
+      e.preventDefault();
+      const titleInp = document.getElementById(source + '-todo-title');
+      const deadInp = document.getElementById(source + '-todo-deadline');
+      const title = titleInp.value.trim();
+      if (!title) return;
+      state.todos.push({
+        id: 'td_' + Date.now(),
+        title,
+        deadline: deadInp.value || '',
+        done: false
+      });
+      titleInp.value = '';
+      deadInp.value = '';
+      saveState();
+      renderHomeHabitsAndTodos();
+      renderCalendarView();
+    }
+
+    function toggleTodo(id) {
+      const td = state.todos.find(x => x.id === id);
+      if (!td) return;
+      td.done = !td.done;
+      saveState();
+      renderHomeHabitsAndTodos();
+      renderCalendarView();
+      if (td.done) completeTaskWithReward(25, td.title);
+    }
+
+    function deleteTodo(id) {
+      state.todos = state.todos.filter(x => x.id !== id);
+      saveState();
+      renderHomeHabitsAndTodos();
+      renderCalendarView();
+    }
+
+    // ---------------------------------------------------------------------
+    // REWARDS, ENERGY IGNITION & MOTIVATION
+    // ---------------------------------------------------------------------
+    function renderRewardsPool() {
+      document.getElementById('rewards-pool-list').innerHTML = state.rewardsPool.map((r, i) => `
+        <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-amber-950/60 border border-amber-500/35 text-xs text-amber-100">
+          <span>🎁 ${r}</span>
+          <button onclick="removeReward(${i})" class="text-slate-400 hover:text-rose-400 font-bold">×</button>
+        </span>
+      `).join('');
+    }
+
+    function addCustomReward(e) {
+      e.preventDefault();
+      const inp = document.getElementById('custom-reward-input');
+      const val = inp.value.trim();
+      if (!val) return;
+      state.rewardsPool.push(val);
+      inp.value = '';
+      saveState();
+      renderRewardsPool();
+    }
+
+    function removeReward(idx) {
+      if (state.rewardsPool.length <= 1) return;
+      state.rewardsPool.splice(idx, 1);
+      saveState();
+      renderRewardsPool();
+    }
+
+    function addCustomEnergyActivity(e) {
+      e.preventDefault();
+      const inp = document.getElementById('custom-energy-input');
+      const val = inp.value.trim();
+      if (!val) return;
+      state.energyActivities.push(val);
+      inp.value = '';
+      saveState();
+      showHudModal('BOOSTER SAVED', '⚡', 'Activity Added!', `"${val}" added to Energy Ignition pool.`, '');
+    }
+
+    function openEnergyIgnition() {
+      const pick = state.energyActivities[Math.floor(Math.random() * state.energyActivities.length)];
+      showHudModal(
+        'ENERGY IGNITION PROTOCOL',
+        '⚡',
+        pick,
+        'Execute this micro-workout right now to spike your energy!',
+        'Complete for +15 Credits & Egg Incubation Progress!',
+        `<button onclick="finishEnergyIgnition()" class="btn-hud px-5 py-2.5 rounded-xl bg-emerald-500 text-black font-display font-bold text-sm hover:bg-emerald-400">✓ COMPLETED (+15 🪙)</button>
+         <button onclick="openEnergyIgnition()" class="btn-hud px-4 py-2.5 rounded-xl bg-amber-500/20 border border-amber-400 text-amber-200 font-display font-bold text-sm">↻ ROLL AGAIN</button>
+         <button onclick="closeHudModal()" class="btn-hud px-4 py-2.5 rounded-xl bg-slate-800 text-slate-300 font-display font-bold text-sm">CLOSE</button>`
+      );
+    }
+
+    function finishEnergyIgnition() {
+      const earned = grantCredits(15);
+      if (state.incubatingEgg) {
+        state.incubatingEgg.progress += 1;
+        const egg = EGGS_DATA.find(e => e.id === state.incubatingEgg.eggId);
+        if (state.incubatingEgg.progress >= egg.tasks) {
+          if (!state.unlockedPets.includes(egg.petId)) state.unlockedPets.push(egg.petId);
+          state.equippedPet = egg.petId;
+          state.incubatingEgg = null;
+        }
+      }
+      saveState();
+      renderShop();
+      closeHudModal();
+    }
+
+    function openSystemMotivation() {
+      const quote = MOTIVATION_LINES[Math.floor(Math.random() * MOTIVATION_LINES.length)];
+      showHudModal(
+        'BATCAVE OVERRIDE // NO SURRENDER',
+        '🔥',
+        'ARISE, MASTER LIAM',
+        `"${quote}"`,
+        'Unlimited Motivation Protocol',
+        `<button onclick="openSystemMotivation()" class="btn-hud px-5 py-2.5 rounded-xl bg-purple-600 text-white font-display font-bold text-sm hover:bg-purple-500">↻ NEXT QUOTE</button>
+         <button onclick="closeHudModal()" class="btn-hud px-4 py-2.5 rounded-xl bg-slate-800 text-slate-300 font-display font-bold text-sm">LOCK IN</button>`
+      );
+    }
+
+    function openDailyPray() {
+      const dayIdx = new Date().getDate();
+      const prayer = DAILY_PRAYERS[dayIdx % DAILY_PRAYERS.length];
+      showHudModal(
+        'DAILY SANCTUARY // PRAYER TO GOD',
+        '🙏',
+        'Strength, Peace & Gratitude',
+        prayer,
+        'Resets automatically every day',
+        `<button onclick="closeHudModal()" class="btn-hud px-6 py-2.5 rounded-xl bg-amber-400 text-black font-display font-bold text-sm hover:bg-amber-300">AMEN ✨</button>`
+      );
+    }
+
+    // ---------------------------------------------------------------------
+    // SHOP & 20-EGG HATCHERY
+    // ---------------------------------------------------------------------
+    function renderShop() {
+      document.getElementById('unlocked-pets-count').textContent = state.unlockedPets.length;
+
+      document.getElementById('pets-roster-grid').innerHTML = EGGS_DATA.map(item => {
+        const owned = state.unlockedPets.includes(item.petId);
+        const equipped = state.equippedPet === item.petId;
+        if (!owned) {
+          return `
+            <div class="p-3 rounded-2xl bg-black/50 border border-slate-800 text-center opacity-45">
+              <div class="text-3xl grayscale">❓</div>
+              <div class="text-[10px] font-mono text-slate-500 mt-1">${item.rarity}</div>
+              <div class="text-xs font-bold text-slate-500">LOCKED</div>
+            </div>
+          `;
+        }
+        return `
+          <div onclick="equipCompanion('${item.petId}')" class="cursor-pointer p-3 rounded-2xl border text-center transition ${equipped ? 'bg-amber-950/50 border-amber-400 shadow-[0_0_16px_rgba(251,191,36,0.3)]' : 'bg-black/70 border-purple-500/30 hover:border-purple-400'}">
+            <div class="text-4xl pet-roam">${item.petEmoji}</div>
+            <div class="text-[10px] font-mono ${item.color} mt-1">${item.rarity}</div>
+            <div class="text-xs font-display font-bold text-white truncate">${item.petName}</div>
+            <div class="mt-1.5 text-[10px] font-mono px-2 py-0.5 rounded ${equipped ? 'bg-amber-400 text-black font-bold' : 'bg-slate-800 text-slate-300'}">
+              ${equipped ? 'EQUIPPED' : 'EQUIP'}
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById('eggs-shop-grid').innerHTML = EGGS_DATA.map(egg => {
+        const owned = state.unlockedPets.includes(egg.petId);
+        const activeEgg = state.incubatingEgg && state.incubatingEgg.eggId === egg.id;
+        return `
+          <div class="p-3.5 rounded-2xl bg-black/75 border border-amber-500/25 flex flex-col justify-between text-center hover:border-amber-400 transition">
+            <div>
+              <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-slate-900 ${egg.color} border border-slate-700">${egg.rarity}</span>
+              <div class="text-5xl my-2.5 egg-shake">${egg.eggEmoji}</div>
+              <h4 class="font-display font-bold text-xs sm:text-sm text-white">${egg.name}</h4>
+              <div class="text-[11px] text-slate-400 mt-1">Hatches in <strong class="text-amber-300">${egg.tasks} tasks</strong></div>
+              <div class="text-[10px] text-purple-300 mt-0.5">${owned ? `Unlocked: ${egg.petName}` : 'Mystery Companion'}</div>
+            </div>
+            <button onclick="purchaseEgg('${egg.id}')" class="mt-3 w-full btn-hud py-2 rounded-xl font-display font-bold text-xs ${activeEgg ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-400' : 'bg-amber-400 text-black hover:bg-amber-300'}">
+              ${activeEgg ? 'INCUBATING...' : `BUY • ${egg.price} 🪙`}
+            </button>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function purchaseEgg(eggId) {
+      const egg = EGGS_DATA.find(e => e.id === eggId);
+      if (!egg) return;
+      if (state.incubatingEgg) {
+        showHudModal('CHAMBER OCCUPIED', '⚠️', 'Egg Already Incubating', 'Finish hatching your current egg first (or use Instant Hatch)!', '');
+        return;
+      }
+      if (state.credits < egg.price) {
+        showHudModal('INSUFFICIENT CREDITS', '🪙', 'Need More Credits', `You need ${egg.price} Credits for the ${egg.name}.`, `Balance: ${state.credits} 🪙`);
+        return;
+      }
+      state.credits -= egg.price;
+      state.incubatingEgg = { eggId: egg.id, progress: 0 };
+      saveState();
+      renderShop();
+      showHudModal('EGG INCUBATING!', egg.eggEmoji, `${egg.name} Acquired!`, `Complete ${egg.tasks} tasks to hatch your companion!`, `-${egg.price} Credits`);
+    }
+
+    function useInstantHatch() {
+      if (!state.incubatingEgg) return;
+      if (state.credits < 50) {
+        showHudModal('NEED 50 CREDITS', '🪙', 'Insufficient Credits', 'Instant Hatch Accelerator costs 50 Credits.', '');
+        return;
+      }
+      state.credits -= 50;
+      const egg = EGGS_DATA.find(e => e.id === state.incubatingEgg.eggId);
+      if (!state.unlockedPets.includes(egg.petId)) state.unlockedPets.push(egg.petId);
+      state.equippedPet = egg.petId;
+      state.incubatingEgg = null;
+      saveState();
+      renderShop();
+      showHudModal('INSTANT HATCH!', egg.petEmoji, `${egg.petName} Awakened!`, `Your ${egg.rarity} companion is now active on your Main Screen!`, '-50 Credits');
+    }
+
+    function buyShopBooster(type) {
+      if (type === 'overdrive') {
+        if (state.credits < 100) return showHudModal('NEED 100 CREDITS', '🪙', 'Insufficient Credits', '2x Overdrive costs 100 Credits.', '');
+        state.credits -= 100;
+        state.overdriveTasksLeft += 5;
+        saveState();
+        showHudModal('OVERDRIVE ACTIVATED!', '⚡', '2x Credits for Next 5 Tasks!', 'Every task completed will award double Credits!', '-100 Credits');
+      } else if (type === 'aura') {
+        if (state.petAuraUnlocked) return showHudModal('ALREADY OWNED', '💠', 'Tactical Aura Active', 'Your pet habitat already has the tactical aura!', '');
+        if (state.credits < 150) return showHudModal('NEED 150 CREDITS', '🪙', 'Insufficient Credits', 'Tactical Aura costs 150 Credits.', '');
+        state.credits -= 150;
+        state.petAuraUnlocked = true;
+        saveState();
+        showHudModal('UPGRADE INSTALLED!', '💠', 'Tactical Aura Unlocked!', 'Your Main HUD pet habitat now pulses with Wayne Manor energy!', '-150 Credits');
+      }
+    }
+
+    function equipCompanion(petId) {
+      state.equippedPet = petId;
+      saveState();
+      renderShop();
+      interactWithPet();
+    }
+
+    // ---------------------------------------------------------------------
+    // ARCADE ARENA GAMES
+    // ---------------------------------------------------------------------
+    function selectArcade(key) {
+      ['sf', 'mech', 'snake', 'pong', 'ttt'].forEach(k => {
+        document.getElementById('arc-panel-' + k).classList.add('hidden');
+        document.getElementById('arc-btn-' + k).className = 'btn-hud px-3 py-2 rounded-xl font-display font-bold text-xs bg-slate-900 text-slate-300 border border-slate-700';
+      });
+      document.getElementById('arc-panel-' + key).classList.remove('hidden');
+      document.getElementById('arc-btn-' + key).className = 'btn-hud px-3 py-2 rounded-xl font-display font-bold text-xs bg-amber-400 text-black shadow-[0_0_15px_rgba(251,191,36,0.4)]';
+
+      if (key === 'sf') initStreetFighter();
+      if (key === 'mech') initMechArena();
+      if (key === 'snake') initSnake();
+      if (key === 'pong') initPong();
+      if (key === 'ttt') initTTT();
+    }
+
+    // Street Fighter
+    let sf = null, sfLoopId = null;
+    function initStreetFighter() {
+      const c = document.getElementById('sf-canvas');
+      c.width = c.clientWidth || 700;
+      c.height = c.clientHeight || 270;
+      document.getElementById('sf-overlay').classList.add('hidden');
+      sf = {
+        over: false,
+        p1: { x: 100, hp: 100, act: 'idle', timer: 0, block: false },
+        ai: { x: c.width - 140, hp: 100, act: 'idle', timer: 0, cd: 38 },
+        balls: [], sparks: []
+      };
+      syncSFHud();
+      if (sfLoopId) cancelAnimationFrame(sfLoopId);
+      runSF();
+    }
+    function syncSFHud() {
+      const p1 = Math.max(0, sf.p1.hp), ai = Math.max(0, sf.ai.hp);
+      document.getElementById('sf-p1-bar').style.width = p1 + '%';
+      document.getElementById('sf-p1-txt').textContent = p1 + '%';
+      document.getElementById('sf-ai-bar').style.width = ai + '%';
+      document.getElementById('sf-ai-txt').textContent = ai + '%';
+    }
+    function sfMove(dir) {
+      if (!sf || sf.over) return;
+      const c = document.getElementById('sf-canvas');
+      sf.p1.x = Math.max(35, Math.min(c.width - 75, sf.p1.x + dir * 35));
+    }
+    function sfAttack(type) {
+      if (!sf || sf.over) return;
+      sf.p1.act = type;
+      sf.p1.timer = 15;
+      sf.p1.block = (type === 'block');
+      const dist = Math.abs(sf.p1.x - sf.ai.x);
+      if (type === 'punch' && dist < 95) { sf.ai.hp -= 10; addSFSparks(sf.ai.x, 140, '#fbbf24'); }
+      else if (type === 'kick' && dist < 115) { sf.ai.hp -= 15; addSFSparks(sf.ai.x, 155, '#a855f7'); }
+      else if (type === 'hadouken') { sf.balls.push({ x: sf.p1.x + 30, y: 145, vx: 9.5, owner: 'p1', col: '#fbbf24' }); }
+      checkSFWinner();
+    }
+    function addSFSparks(x, y, col) {
+      for (let i = 0; i < 10; i++) {
+        sf.sparks.push({ x, y, vx: (Math.random() - 0.5) * 9, vy: (Math.random() - 0.5) * 9, life: 16, col });
+      }
+    }
+    function checkSFWinner() {
+      syncSFHud();
+      if (sf.ai.hp <= 0 && !sf.over) {
+        sf.over = true;
+        state.credits += 40;
+        saveState();
+        document.getElementById('sf-end-title').textContent = 'K.O.! MASTER LIAM WINS!';
+        document.getElementById('sf-end-sub').textContent = '+40 Credits Awarded!';
+        document.getElementById('sf-overlay').classList.remove('hidden');
+      } else if (sf.p1.hp <= 0 && !sf.over) {
+        sf.over = true;
+        document.getElementById('sf-end-title').textContent = 'DEFEATED';
+        document.getElementById('sf-end-sub').textContent = 'Hit Rematch to fight back!';
+        document.getElementById('sf-overlay').classList.remove('hidden');
+      }
+    }
+    function runSF() {
+      const c = document.getElementById('sf-canvas');
+      const ctx = c.getContext('2d');
+      const W = c.width, H = c.height, floor = H - 40;
+
+      ctx.fillStyle = '#04050a';
+      ctx.fillRect(0, 0, W, H);
+      ctx.strokeStyle = 'rgba(251, 191, 36, 0.3)';
+      ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(0, floor); ctx.lineTo(W, floor); ctx.stroke();
+
+      if (!sf.over) {
+        if (sf.p1.timer > 0) sf.p1.timer--; else { sf.p1.act = 'idle'; sf.p1.block = false; }
+        if (sf.ai.timer > 0) sf.ai.timer--; else sf.ai.act = 'idle';
+
+        sf.ai.cd--;
+        const dist = Math.abs(sf.p1.x - sf.ai.x);
+        if (dist > 105) sf.ai.x += sf.p1.x < sf.ai.x ? -2.3 : 2.3;
+        if (sf.ai.cd <= 0) {
+          sf.ai.cd = 40 + Math.floor(Math.random() * 25);
+          if (dist < 110) {
+            sf.ai.act = 'punch'; sf.ai.timer = 14;
+            sf.p1.hp -= sf.p1.block ? 2 : 9;
+            addSFSparks(sf.p1.x, floor - 60, '#ff2a5f');
+            checkSFWinner();
+          } else {
+            sf.ai.act = 'hadouken'; sf.ai.timer = 14;
+            sf.balls.push({ x: sf.ai.x - 25, y: floor - 60, vx: -8, owner: 'ai', col: '#ff2a5f' });
+          }
+        }
+      }
+
+      const drawChar = (f, isP1) => {
+        const col = isP1 ? '#fbbf24' : '#ff2a5f';
+        ctx.save();
+        ctx.shadowBlur = 14; ctx.shadowColor = col;
+        ctx.fillStyle = col;
+        ctx.fillRect(f.x - 15, floor - 82, 30, 52);
+        ctx.beginPath(); ctx.arc(f.x, floor - 96, 13, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#e2e8f0';
+        ctx.fillRect(f.x - 13, floor - 30, 9, 30);
+        ctx.fillRect(f.x + 4, floor - 30, 9, 30);
+        if (f.act === 'punch') { ctx.fillStyle = '#fbbf24'; ctx.fillRect(isP1 ? f.x + 15 : f.x - 45, floor - 72, 30, 11); }
+        if (f.act === 'kick') { ctx.fillStyle = '#a855f7'; ctx.fillRect(isP1 ? f.x + 14 : f.x - 50, floor - 44, 36, 13); }
+        if (f.block) { ctx.strokeStyle = '#34d399'; ctx.lineWidth = 3; ctx.strokeRect(f.x - 22, floor - 112, 44, 112); }
+        ctx.restore();
+      };
+      drawChar(sf.p1, true);
+      drawChar(sf.ai, false);
+
+      sf.balls = sf.balls.filter(b => {
+        b.x += b.vx;
+        ctx.save(); ctx.shadowBlur = 16; ctx.shadowColor = b.col; ctx.fillStyle = b.col;
+        ctx.beginPath(); ctx.arc(b.x, b.y, 11, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+        if (!sf.over) {
+          if (b.owner === 'p1' && Math.abs(b.x - sf.ai.x) < 24) { sf.ai.hp -= 16; addSFSparks(sf.ai.x, b.y, '#fbbf24'); checkSFWinner(); return false; }
+          if (b.owner === 'ai' && Math.abs(b.x - sf.p1.x) < 24) { sf.p1.hp -= sf.p1.block ? 3 : 12; addSFSparks(sf.p1.x, b.y, '#ff2a5f'); checkSFWinner(); return false; }
+        }
+        return b.x > 0 && b.x < W;
+      });
+
+      sf.sparks = sf.sparks.filter(s => {
+        s.x += s.vx; s.y += s.vy; s.life--;
+        ctx.fillStyle = s.col; ctx.fillRect(s.x, s.y, 4, 4);
+        return s.life > 0;
+      });
+
+      sfLoopId = requestAnimationFrame(runSF);
+    }
+
+    // Robot Mech Arena
+    let mech = null;
+    function initMechArena() {
+      mech = { p1: 120, ai: 120, shield: false, over: false, beam: null };
+      syncMechHud();
+      drawMechScene();
+      document.getElementById('mech-log').textContent = 'Select a weapon module!';
+    }
+    function syncMechHud() {
+      document.getElementById('mech-p1-hp').textContent = Math.max(0, mech.p1) + ' HP';
+      document.getElementById('mech-ai-hp').textContent = Math.max(0, mech.ai) + ' HP';
+      document.getElementById('mech-p1-bar').style.width = Math.max(0, (mech.p1 / 120) * 100) + '%';
+      document.getElementById('mech-ai-bar').style.width = Math.max(0, (mech.ai / 120) * 100) + '%';
+    }
+    function drawMechScene() {
+      const c = document.getElementById('mech-canvas');
+      c.width = c.clientWidth || 650;
+      c.height = c.clientHeight || 230;
+      const ctx = c.getContext('2d');
+      const W = c.width, H = c.height;
+
+      ctx.fillStyle = '#05060e'; ctx.fillRect(0, 0, W, H);
+      ctx.strokeStyle = 'rgba(251, 191, 36, 0.25)'; ctx.strokeRect(10, 10, W - 20, H - 20);
+
+      ctx.font = '64px sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText('🤖', W * 0.24, H * 0.62);
+      ctx.font = 'bold 12px Orbitron'; ctx.fillStyle = '#fbbf24'; ctx.fillText('MARK-XL', W * 0.24, H * 0.82);
+
+      ctx.font = '64px sans-serif'; ctx.fillText('👾', W * 0.76, H * 0.62);
+      ctx.font = 'bold 12px Orbitron'; ctx.fillStyle = '#ff2a5f'; ctx.fillText('OMEGA BOT', W * 0.76, H * 0.82);
+
+      if (mech && mech.beam) {
+        ctx.strokeStyle = mech.beam; ctx.lineWidth = 6;
+        ctx.beginPath(); ctx.moveTo(W * 0.32, H * 0.5); ctx.lineTo(W * 0.68, H * 0.5); ctx.stroke();
+      }
+    }
+    function mechTurn(move) {
+      if (!mech || mech.over) return;
+      let msg = ''; mech.shield = false;
+      if (move === 'laser') {
+        const dmg = 20 + Math.floor(Math.random() * 10); mech.ai -= dmg; mech.beam = '#fbbf24'; msg = `⚡ Laser hit for ${dmg} DMG!`;
+      } else if (move === 'rockets') {
+        const dmg = 26 + Math.floor(Math.random() * 12); mech.ai -= dmg; mech.beam = '#ff2a5f'; msg = `🚀 Rockets hit for ${dmg} DMG!`;
+      } else if (move === 'shield') {
+        mech.shield = true; mech.p1 = Math.min(120, mech.p1 + 15); mech.beam = '#34d399'; msg = `🛡️ Shield deployed (+15 HP)!`;
+      } else if (move === 'overload') {
+        const dmg = 38; mech.ai -= dmg; mech.p1 -= 10; mech.beam = '#a855f7'; msg = `💥 Overload dealt ${dmg} DMG (10 recoil)!`;
+      }
+      drawMechScene(); syncMechHud();
+      if (mech.ai <= 0) {
+        mech.over = true; state.credits += 45; saveState();
+        document.getElementById('mech-log').textContent = '🏆 VICTORY! +45 Credits Awarded!';
+        showHudModal('ROBOT ARENA WIN!', '🤖', '+45 Credits Earned!', 'Your Mark-XL Mech destroyed Omega Bot!', '');
+        return;
+      }
+      setTimeout(() => {
+        if (!mech || mech.over) return;
+        let aiDmg = 16 + Math.floor(Math.random() * 12);
+        if (mech.shield) aiDmg = Math.floor(aiDmg * 0.25);
+        mech.p1 -= aiDmg; mech.beam = null;
+        drawMechScene(); syncMechHud();
+        document.getElementById('mech-log').textContent = `${msg} | Enemy hit for ${aiDmg} DMG!`;
+        if (mech.p1 <= 0) { mech.over = true; document.getElementById('mech-log').textContent = '💀 Mark-XL Offline! Rematch?'; }
+      }, 350);
+    }
+
+    // Snake
+    let snakeTimer = null, snk = null;
+    function initSnake() {
+      const c = document.getElementById('snake-canvas');
+      const sz = c.clientWidth || 300; c.width = sz; c.height = sz;
+      snk = { grid: 15, body: [{ x: 7, y: 7 }, { x: 6, y: 7 }], dir: { x: 1, y: 0 }, food: { x: 11, y: 7 }, score: 0, paid: false };
+      document.getElementById('snake-score-val').textContent = '0';
+      if (snakeTimer) clearInterval(snakeTimer);
+      snakeTimer = setInterval(stepSnake, 140);
+    }
+    function setSnakeDir(dx, dy) {
+      if (!snk) return;
+      if (snk.dir.x === -dx && snk.dir.y === -dy) return;
+      snk.dir = { x: dx, y: dy };
+    }
+    function stepSnake() {
+      const c = document.getElementById('snake-canvas');
+      const ctx = c.getContext('2d');
+      const cell = c.width / snk.grid;
+      const head = { x: (snk.body[0].x + snk.dir.x + snk.grid) % snk.grid, y: (snk.body[0].y + snk.dir.y + snk.grid) % snk.grid };
+      if (snk.body.some(s => s.x === head.x && s.y === head.y)) {
+        clearInterval(snakeTimer); ctx.fillStyle = 'rgba(0,0,0,0.8)'; ctx.fillRect(0, 0, c.width, c.height);
+        ctx.fillStyle = '#ff2a5f'; ctx.font = 'bold 18px Orbitron'; ctx.textAlign = 'center'; ctx.fillText('GAME OVER', c.width / 2, c.height / 2);
+        return;
+      }
+      snk.body.unshift(head);
+      if (head.x === snk.food.x && head.y === snk.food.y) {
+        snk.score++; document.getElementById('snake-score-val').textContent = snk.score;
+        snk.food = { x: Math.floor(Math.random() * snk.grid), y: Math.floor(Math.random() * snk.grid) };
+        if (snk.score >= 8 && !snk.paid) {
+          snk.paid = true; state.credits += 25; saveState();
+          showHudModal('SNAKE WIN!', '🐍', '+25 Credits Awarded!', 'Scored 8+ points in Snake!', '');
+        }
+      } else { snk.body.pop(); }
+      ctx.fillStyle = '#030408'; ctx.fillRect(0, 0, c.width, c.height);
+      ctx.fillStyle = '#fbbf24'; ctx.fillRect(snk.food.x * cell + 2, snk.food.y * cell + 2, cell - 4, cell - 4);
+      snk.body.forEach((s, i) => {
+        ctx.fillStyle = i === 0 ? '#fbbf24' : '#10b981';
+        ctx.fillRect(s.x * cell + 1, s.y * cell + 1, cell - 2, cell - 2);
+      });
+    }
+
+    // Ping Pong
+    let pongLoop = null, pg = null;
+    function initPong() {
+      const c = document.getElementById('pong-canvas');
+      c.width = c.clientWidth || 600; c.height = c.clientHeight || 250;
+      pg = { pY: c.height / 2 - 32, aiY: c.height / 2 - 32, pH: 64, bx: c.width / 2, by: c.height / 2, vx: 4.4, vy: 3, pS: 0, aiS: 0, over: false };
+      c.onpointermove = e => {
+        const r = c.getBoundingClientRect();
+        pg.pY = Math.max(0, Math.min(c.height - pg.pH, e.clientY - r.top - pg.pH / 2));
+      };
+      if (pongLoop) cancelAnimationFrame(pongLoop);
+      runPong();
+    }
+    function movePong(dy) {
+      if (!pg) return;
+      const c = document.getElementById('pong-canvas');
+      pg.pY = Math.max(0, Math.min(c.height - pg.pH, pg.pY + dy));
+    }
+    function runPong() {
+      const c = document.getElementById('pong-canvas');
+      const ctx = c.getContext('2d');
+      const W = c.width, H = c.height;
+      ctx.fillStyle = '#030408'; ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = '#fbbf24'; ctx.font = 'bold 24px Orbitron'; ctx.fillText(pg.pS, W * 0.25, 36);
+      ctx.fillStyle = '#a855f7'; ctx.fillText(pg.aiS, W * 0.72, 36);
+
+      if (!pg.over) {
+        pg.bx += pg.vx; pg.by += pg.vy;
+        if (pg.by < 7 || pg.by > H - 7) pg.vy *= -1;
+        if (pg.aiY + pg.pH / 2 < pg.by - 8) pg.aiY += 3.2;
+        else if (pg.aiY + pg.pH / 2 > pg.by + 8) pg.aiY -= 3.2;
+
+        if (pg.bx < 22 && pg.by > pg.pY && pg.by < pg.pY + pg.pH) pg.vx = Math.abs(pg.vx) * 1.04;
+        if (pg.bx > W - 22 && pg.by > pg.aiY && pg.by < pg.aiY + pg.pH) pg.vx = -Math.abs(pg.vx) * 1.04;
+
+        if (pg.bx < 0) { pg.aiS++; pg.bx = W / 2; pg.by = H / 2; pg.vx = 4.4; }
+        if (pg.bx > W) { pg.pS++; pg.bx = W / 2; pg.by = H / 2; pg.vx = -4.4; }
+
+        if (pg.pS >= 5) {
+          pg.over = true; state.credits += 30; saveState();
+          showHudModal('PING PONG WIN!', '🏓', '+30 Credits Awarded!', 'Beat AI 5–' + pg.aiS + '!', '');
+        } else if (pg.aiS >= 5) { pg.over = true; }
+      }
+      ctx.fillStyle = '#fbbf24'; ctx.fillRect(10, pg.pY, 10, pg.pH);
+      ctx.fillStyle = '#a855f7'; ctx.fillRect(W - 20, pg.aiY, 10, pg.pH);
+      ctx.fillStyle = '#00f3ff'; ctx.beginPath(); ctx.arc(pg.bx, pg.by, 7, 0, Math.PI * 2); ctx.fill();
+      pongLoop = requestAnimationFrame(runPong);
+    }
+
+    // Tic-Tac-Toe
+    let ttt = Array(9).fill(''), tttEnd = false;
+    function initTTT() {
+      ttt = Array(9).fill(''); tttEnd = false;
+      document.getElementById('ttt-msg').textContent = 'Your Turn (X)';
+      renderTTTBoard();
+    }
+    function renderTTTBoard() {
+      document.getElementById('ttt-board').innerHTML = ttt.map((v, i) => `
+        <button onclick="tapTTT(${i})" class="h-20 sm:h-24 rounded-2xl bg-black border border-amber-500/40 font-display font-black text-3xl flex items-center justify-center ${v === 'X' ? 'text-amber-400' : 'text-rose-400'}">${v}</button>
+      `).join('');
+    }
+    function checkTTT(b) {
+      const w = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+      for (const [a, c, d] of w) if (b[a] && b[a] === b[c] && b[a] === b[d]) return b[a];
+      return b.includes('') ? null : 'DRAW';
+    }
+    function tapTTT(i) {
+      if (tttEnd || ttt[i]) return;
+      ttt[i] = 'X'; renderTTTBoard();
+      let res = checkTTT(ttt); if (res) return finishTTT(res);
+      const open = ttt.map((v, idx) => v === '' ? idx : null).filter(v => v !== null);
+      ttt[open[Math.floor(Math.random() * open.length)]] = 'O'; renderTTTBoard();
+      res = checkTTT(ttt); if (res) finishTTT(res);
+    }
+    function finishTTT(res) {
+      tttEnd = true;
+      if (res === 'X') {
+        document.getElementById('ttt-msg').textContent = 'VICTORY! +20 CREDITS!';
+        state.credits += 20; saveState();
+        showHudModal('TIC-TAC-TOE WIN!', '❌', '+20 Credits Awarded!', 'Outsmarted ALFRED on the grid!', '');
+      } else if (res === 'O') document.getElementById('ttt-msg').textContent = 'ALFRED WINS!';
+      else document.getElementById('ttt-msg').textContent = 'DRAW MATCH!';
+    }
+
+    // ---------------------------------------------------------------------
+    // NEON NIGHT CITY (MORNING / AFTERNOON / NIGHT + WEATHER)
+    // ---------------------------------------------------------------------
+    let cityState = { timeMode: 'night', weatherMode: 'clear' };
+    let buildings = [], pedestrians = [], weatherParticles = [], drones = [];
+
+    function initCityCanvas() {
+      const c = document.getElementById('city-canvas');
+      c.width = c.clientWidth || 850;
+      c.height = c.clientHeight || 320;
+
+      buildings = [];
+      let x = 0;
+      while (x < c.width + 50) {
+        const w = 42 + Math.floor(Math.random() * 52);
+        const h = 95 + Math.floor(Math.random() * 180);
+        const wins = [];
+        for (let wy = 16; wy < h - 18; wy += 16) {
+          for (let wx = 7; wx < w - 10; wx += 13) {
+            if (Math.random() > 0.35) wins.push({ wx, wy, on: Math.random() > 0.25 });
+          }
+        }
+        buildings.push({
+          x, w, h,
+          signCol: ['#fbbf24', '#00f3ff', '#a855f7', '#ff2a5f'][Math.floor(Math.random() * 4)],
+          sign: Math.random() > 0.4,
+          wins
+        });
+        x += w + 4;
+      }
+
+      pedestrians = Array.from({ length: 16 }, (_, i) => ({
+        x: Math.random() * c.width,
+        vx: (0.4 + Math.random() * 0.7) * (Math.random() > 0.5 ? 1 : -1),
+        col: ['#fbbf24', '#00f3ff', '#f472b6', '#38bdf8', '#a855f7'][i % 5],
+        phase: Math.random() * 10
+      }));
+
+      weatherParticles = Array.from({ length: 100 }, () => ({
+        x: Math.random() * c.width,
+        y: Math.random() * c.height,
+        sp: 3 + Math.random() * 4,
+        size: 2 + Math.random() * 3
+      }));
+
+      c.onclick = e => {
+        const r = c.getBoundingClientRect();
+        drones.push({ x: e.clientX - r.left, y: e.clientY - r.top, vx: (Math.random() > 0.5 ? 1 : -1) * 2 });
+      };
+    }
+
+    function syncCityControls() {
+      cityState.timeMode = document.getElementById('city-time-mode').value;
+      cityState.weatherMode = document.getElementById('city-weather-mode').value;
+    }
+
+    function animateCity() {
+      const c = document.getElementById('city-canvas');
+      if (c && document.getElementById('view-city').classList.contains('active')) {
+        if (c.width !== c.clientWidth && c.clientWidth > 0) initCityCanvas();
+        const ctx = c.getContext('2d');
+        const W = c.width, H = c.height, roadY = H - 32;
+
+        // Sky Gradients for Morning, Afternoon, Night
+        let gradColors = ['#010206', '#070b1e']; // night
+        if (cityState.timeMode === 'morning') gradColors = ['#f59e0b', '#ec4899'];
+        else if (cityState.timeMode === 'afternoon') gradColors = ['#38bdf8', '#1d4ed8'];
+
+        const g = ctx.createLinearGradient(0, 0, 0, roadY);
+        g.addColorStop(0, gradColors[0]); g.addColorStop(1, gradColors[1]);
+        ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+
+        // Buildings
+        buildings.forEach(b => {
+          const by = roadY - b.h;
+          ctx.fillStyle = cityState.timeMode === 'night' ? '#05070f' : '#1e293b';
+          ctx.fillRect(b.x, by, b.w, b.h);
+          ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+          ctx.strokeRect(b.x, by, b.w, b.h);
+
+          b.wins.forEach(w => {
+            if (!w.on) return;
+            ctx.fillStyle = cityState.timeMode === 'night' ? 'rgba(251, 191, 36, 0.25)' : 'rgba(255,255,255,0.35)';
+            ctx.fillRect(b.x + w.wx, by + w.wy, 5, 8);
+          });
+
+          if (b.sign && cityState.timeMode === 'night') {
+            ctx.save();
+            ctx.shadowBlur = 12; ctx.shadowColor = b.signCol; ctx.fillStyle = b.signCol;
+            ctx.fillRect(b.x + b.w - 9, by + 18, 4, Math.min(45, b.h * 0.4));
+            ctx.restore();
+          }
+        });
+
+        // Road / Sidewalk
+        ctx.fillStyle = '#020307'; ctx.fillRect(0, roadY, W, H - roadY);
+        ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.moveTo(0, roadY); ctx.lineTo(W, roadY); ctx.stroke();
+
+        // Walking Pedestrians
+        pedestrians.forEach(p => {
+          p.x += p.vx; p.phase += 0.16;
+          if (p.x > W + 15) p.x = -15;
+          if (p.x < -15) p.x = W + 15;
+          const bob = Math.abs(Math.sin(p.phase)) * 2;
+          const py = roadY - 16 - bob;
+          ctx.fillStyle = '#0f172a'; ctx.fillRect(p.x - 3, py + 4, 6, 12);
+          ctx.beginPath(); ctx.arc(p.x, py + 2, 3, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = p.col; ctx.fillRect(p.x - 3, py + 5, 6, 2);
+        });
+
+        // Drones
+        drones.forEach(d => {
+          d.x += d.vx;
+          if (d.x > W + 20) d.x = -20;
+          if (d.x < -20) d.x = W + 20;
+          ctx.fillStyle = '#fbbf24'; ctx.fillRect(d.x - 7, d.y - 2, 14, 3);
+        });
+
+        // Weather
+        if (cityState.weatherMode === 'rain') {
+          ctx.strokeStyle = 'rgba(0, 243, 255, 0.45)'; ctx.lineWidth = 1;
+          weatherParticles.forEach(pt => {
+            pt.y += pt.sp * 1.8; pt.x -= 1;
+            if (pt.y > roadY) { pt.y = 0; pt.x = Math.random() * W; }
+            ctx.beginPath(); ctx.moveTo(pt.x, pt.y); ctx.lineTo(pt.x - 2, pt.y + 10); ctx.stroke();
+          });
+        } else if (cityState.weatherMode === 'snow') {
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+          weatherParticles.forEach(pt => {
+            pt.y += pt.sp * 0.6; pt.x += Math.sin(pt.y * 0.05);
+            if (pt.y > roadY) { pt.y = 0; pt.x = Math.random() * W; }
+            ctx.beginPath(); ctx.arc(pt.x, pt.y, pt.size * 0.7, 0, Math.PI * 2); ctx.fill();
+          });
+        }
+      }
+      requestAnimationFrame(animateCity);
+    }
+
+    // ---------------------------------------------------------------------
+    // ANIMAL FIGHT PREDICTOR ARENA (VENUE, BUMPING, JUMP/FALL ANIMATION)
+    // ---------------------------------------------------------------------
+    const ANIMAL_FIGHTERS = [
+      { name: 'APEX LION', emoji: '🦁' },
+      { name: 'GRIZZLY BEAR', emoji: '🐻' },
+      { name: 'SIBERIAN TIGER', emoji: '🐯' },
+      { name: 'SILVERBACK GORILLA', emoji: '🦍' },
+      { name: 'NILE CROCODILE', emoji: '🐊' },
+      { name: 'GREAT WHITE SHARK', emoji: '🦈' },
+      { name: 'DIRE WOLF', emoji: '🐺' },
+      { name: 'GOLDEN EAGLE', emoji: '🦅' },
+      { name: 'SCORPION KING', emoji: '🦂' },
+      { name: 'MECH WARRIOR', emoji: '🤖' }
+    ];
+
+    let animalMatch = null, animalInterval = null;
+
+    function setupNewAnimalFight() {
+      if (animalInterval) clearInterval(animalInterval);
+      const shuffled = [...ANIMAL_FIGHTERS].sort(() => 0.5 - Math.random());
+      animalMatch = {
+        f1: { ...shuffled[0], hp: 100 },
+        f2: { ...shuffled[1], hp: 100 },
+        prediction: null,
+        fighting: false
+      };
+
+      document.getElementById('fighter1-emoji').textContent = animalMatch.f1.emoji;
+      document.getElementById('fighter1-emoji').className = 'text-6xl sm:text-7xl filter drop-shadow-[0_0_15px_rgba(251,191,36,0.8)] transition-transform duration-300';
+      document.getElementById('fighter1-name').textContent = animalMatch.f1.name;
+      document.getElementById('fighter2-emoji').textContent = animalMatch.f2.emoji;
+      document.getElementById('fighter2-emoji').className = 'text-6xl sm:text-7xl filter drop-shadow-[0_0_15px_rgba(255,42,95,0.8)] transition-transform duration-300';
+      document.getElementById('fighter2-name').textContent = animalMatch.f2.name;
+
+      document.getElementById('pred-btn-1').textContent = `🎯 PREDICT: ${animalMatch.f1.name} WINS`;
+      document.getElementById('pred-btn-2').textContent = `🎯 PREDICT: ${animalMatch.f2.name} WINS`;
+      document.getElementById('fight-predict-controls').classList.remove('hidden');
+      document.getElementById('fight-commentary').textContent = 'Select venue, predict winner above to watch them clash in the colosseum!';
+      syncAnimalBars();
+    }
+
+    function syncAnimalBars() {
+      const h1 = Math.max(0, animalMatch.f1.hp), h2 = Math.max(0, animalMatch.f2.hp);
+      document.getElementById('fighter1-bar').style.width = h1 + '%';
+      document.getElementById('fighter1-hp').textContent = h1 + ' HP';
+      document.getElementById('fighter2-bar').style.width = h2 + '%';
+      document.getElementById('fighter2-hp').textContent = h2 + ' HP';
+    }
+
+    function startAnimalFight(pickNum) {
+      if (!animalMatch || animalMatch.fighting) return;
+      animalMatch.prediction = pickNum;
+      animalMatch.fighting = true;
+      document.getElementById('fight-predict-controls').classList.add('hidden');
+      const pickedName = pickNum === 1 ? animalMatch.f1.name : animalMatch.f2.name;
+      document.getElementById('fight-commentary').textContent = `You predicted ${pickedName}! Combat initiated!`;
+
+      const f1Box = document.getElementById('fighter1-box');
+      const f2Box = document.getElementById('fighter2-box');
+
+      animalInterval = setInterval(() => {
+        const attacker = Math.random() > 0.5 ? 1 : 2;
+        const dmg = 15 + Math.floor(Math.random() * 18);
+
+        if (attacker === 1) {
+          animalMatch.f2.hp -= dmg;
+          f1Box.style.transform = 'translateX(25px)';
+          setTimeout(() => f1Box.style.transform = 'translateX(0)', 150);
+          document.getElementById('fight-commentary').textContent = `${animalMatch.f1.emoji} ${animalMatch.f1.name} strikes for ${dmg} DMG!`;
+        } else {
+          animalMatch.f1.hp -= dmg;
+          f2Box.style.transform = 'translateX(-25px)';
+          setTimeout(() => f2Box.style.transform = 'translateX(0)', 150);
+          document.getElementById('fight-commentary').textContent = `${animalMatch.f2.emoji} ${animalMatch.f2.name} counters for ${dmg} DMG!`;
+        }
+        syncAnimalBars();
+
+        if (animalMatch.f1.hp <= 0 || animalMatch.f2.hp <= 0) {
+          clearInterval(animalInterval);
+          const winner = animalMatch.f1.hp > 0 ? 1 : 2;
+          const winObj = winner === 1 ? animalMatch.f1 : animalMatch.f2;
+          const loseEmoji = winner === 1 ? document.getElementById('fighter2-emoji') : document.getElementById('fighter1-emoji');
+          const winEmoji = winner === 1 ? document.getElementById('fighter1-emoji') : document.getElementById('fighter2-emoji');
+
+          loseEmoji.style.transform = 'translateY(35px) rotate(90deg)';
+          loseEmoji.style.opacity = '0.4';
+          winEmoji.style.transform = 'translateY(-20px) scale(1.2)';
+
+          if (winner === animalMatch.prediction) {
+            state.credits += 40;
+            saveState();
+            document.getElementById('fight-commentary').textContent = `🏆 ${winObj.emoji} ${winObj.name} WINS! Your prediction was CORRECT! +40 Credits!`;
+            showHudModal('PREDICTION CORRECT!', winObj.emoji, `${winObj.name} WON!`, 'Brilliant tactical prediction, Master Liam!', '+40 Credits Awarded!');
+          } else {
+            document.getElementById('fight-commentary').textContent = `💀 ${winObj.emoji} ${winObj.name} WON! Prediction missed — 0 Credits gained.`;
+          }
+        }
+      }, 700);
+    }
+
+    // ---------------------------------------------------------------------
+    // TRIPLE AI HUB (ALFRED / JARVIS + LOZZINIHO + KYLA)
+    // ---------------------------------------------------------------------
+    function switchAiPersona(who) {
+      ['jarvis', 'lozziniho', 'kyla'].forEach(k => {
+        document.getElementById('ai-box-' + k).classList.add('hidden');
+        document.getElementById('ai-tab-' + k).className = 'btn-hud py-3 px-2 rounded-2xl font-display font-bold text-xs sm:text-sm bg-slate-900 text-slate-300 border border-slate-700';
+      });
+      document.getElementById('ai-box-' + who).classList.remove('hidden');
+      const activeStyle = who === 'jarvis'
+        ? 'bg-amber-400 text-black shadow-[0_0_16px_rgba(251,191,36,0.4)]'
+        : who === 'lozziniho'
+        ? 'bg-cyan-500 text-black shadow-[0_0_16px_rgba(0,243,255,0.4)]'
+        : 'bg-rose-500 text-white shadow-[0_0_16px_rgba(255,42,95,0.4)]';
+      document.getElementById('ai-tab-' + who).className = `btn-hud py-3 px-2 rounded-2xl font-display font-bold text-xs sm:text-sm ${activeStyle}`;
+    }
+
+    function renderChatFeeds() {
+      const jFeed = document.getElementById('chat-feed-jarvis');
+      jFeed.innerHTML = state.jarvisMessages.map(m => `
+        <div class="flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}">
+          <div class="max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed ${m.role === 'user' ? 'bg-amber-500/20 border border-amber-400/50 text-white' : 'bg-slate-900/95 border border-amber-500/30 text-slate-200'}">
+            <div class="text-[10px] font-mono mb-0.5 ${m.role === 'user' ? 'text-amber-300 text-right' : 'text-amber-400'}">${m.role === 'user' ? 'MASTER LIAM' : 'ALFRED'}</div>
+            <div>${m.text}</div>
+          </div>
+        </div>
+      `).join('');
+      jFeed.scrollTop = jFeed.scrollHeight;
+
+      const kFeed = document.getElementById('chat-feed-kyla');
+      kFeed.innerHTML = state.kylaMessages.map(m => `
+        <div class="flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}">
+          <div class="max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed ${m.role === 'user' ? 'bg-rose-500/20 border border-rose-400/50 text-white' : 'bg-slate-900/95 border border-rose-500/35 text-rose-100'}">
+            <div class="text-[10px] font-mono mb-0.5 ${m.role === 'user' ? 'text-rose-300 text-right' : 'text-rose-400'}">${m.role === 'user' ? 'LIAM' : 'KYLA ❤️'}</div>
+            <div>${m.text}</div>
+          </div>
+        </div>
+      `).join('');
+      kFeed.scrollTop = kFeed.scrollHeight;
+    }
+
+    function quickSendAi(who, txt) {
+      document.getElementById('input-' + who).value = txt;
+      handleAiSubmit(new Event('submit'), who);
+    }
+
+    function handleAiSubmit(e, who) {
+      e.preventDefault();
+      const inp = document.getElementById('input-' + who);
+      const msg = inp.value.trim();
+      if (!msg) return;
+      inp.value = '';
+
+      if (who === 'jarvis') {
+        state.jarvisMessages.push({ role: 'user', text: msg });
+        state.jarvisMessages.push({ role: 'ai', text: craftAlfredResponse(msg) });
+      } else if (who === 'kyla') {
+        state.kylaMessages.push({ role: 'user', text: msg });
+        state.kylaMessages.push({ role: 'ai', text: craftKylaResponse(msg) });
+      }
+      saveState();
+      renderChatFeeds();
+    }
+
+    function craftAlfredResponse(msg) {
+      const low = msg.toLowerCase();
+      if (low.includes('anessa') || low.includes('ex') || low.includes('heartbreak')) {
+        return "I recall everything regarding Anessa, Master Liam. That chapter tested your resolve, but it forged the tactical discipline you possess today. Keep your eyes on the mission ahead.";
+      }
+      if (low.includes('kyla')) {
+        return "Matters of the heart require patience and wisdom, Master Liam. Focus on leveling up your life, your fitness, and your YouTube channel, and everything else will align.";
+      }
+      if (low.includes('youtube') || low.includes('mrbeast') || low.includes('video')) {
+        return "MrBeast-style success relies on extreme stakes and fast pacing. Visit Lozziniho in the AI Hub to generate 10 viral titles right now.";
+      }
+      if (low.includes('speech') || low.includes('batman') || low.includes('quit')) {
+        return "Remember why you started, Master Liam. We fall so we can learn to pick ourselves back up. Arise and conquer the next task.";
+      }
+      return `At your service, Master Liam. You currently hold ${state.credits} Credits in the Batcave vault—what are we tackling next?`;
+    }
+
+    function craftKylaResponse(msg) {
+      const low = msg.toLowerCase();
+      if (low.includes('miss') || low.includes('love')) {
+        return "You're so sweet, Liam ❤️ I'm always thinking about you. How did your training and studies go today?";
+      }
+      if (low.includes('tired') || low.includes('tough') || low.includes('sad')) {
+        return "Come here 🥺 You work so hard every day. Take a well-deserved break and let me cheer you up, Liam ❤️";
+      }
+      return "You're going to crush all your goals, Liam! I believe in you so much ✨❤️";
+    }
+
+    function resetChat(who) {
+      if (who === 'jarvis') {
+        state.jarvisMessages = [{ role: 'ai', text: 'Batcave comms reset, Master Liam. Standing by!' }];
+      } else {
+        state.kylaMessages = [{ role: 'ai', text: 'Fresh chat, Liam ❤️ What is on your mind?' }];
+      }
+      saveState();
+      renderChatFeeds();
+    }
+
+    // Lozziniho YouTube Idea Generator (10 Ideas)
+    const LOZZINIHO_IDEAS = {
+      mrbeast: [
+        "Surviving 24 Hours With $0 Budget — Trading Up to a Feast!",
+        "Last to Stop Holding a Wall-Sit Wins Total Control of My Day!",
+        "10 Minutes to Build a Cardboard Bridge That Holds Water Bottles!",
+        "Letting a Random Wheel Control Everything I Eat for 12 Hours",
+        "Testing 7 Viral 'Impossible' Trick Shots Before Timer Hits Zero",
+        "$10 Snack vs $100 Luxury Snack — Blindfolded Taste Test!",
+        "Surviving 12 Hours Without Using My Thumbs!",
+        "100 Push-Ups Every Time I Fail This Challenge!",
+        "24 Hours Living Like a Real-Life Dark Knight in the City",
+        "Can I Learn an Impossible Skill in Just 3 Hours?"
+      ],
+      gaming: [
+        "If I Lose in Brawl Stars, I Have to Eat a Raw Lemon!",
+        "Reaching Masters in Brawl Stars Using ONLY Random Brawlers!",
+        "1 Goal Conceded in FC Mobile = 25 Push-Ups Live!",
+        "Street Fighter vs Real-Life Reflexes — Testing Speed!",
+        "Beating the Hardest Roblox Obby Blindfolded!",
+        "Building a God Squad in FC Mobile Without Spending $1!",
+        "100 Hours of Brawl Stars Ranked Taught Me THIS Secret...",
+        "10 Minutes in Game Station to Beat a Boss Without Damage!",
+        "Fortnite 1v1 Where Loser Gets an Embarrassing Dare!",
+        "Testing Secret Gaming Tricks That Actually Work in 2026"
+      ],
+      football: [
+        "Training Like Cristiano Ronaldo for 7 Days Straight!",
+        "5 Unstoppable Football Skill Moves That Embarrass Defenders",
+        "1,000 Penalty Kicks in One Day — What Happened?",
+        "Matchday Vlog: Inside My Biggest Football Championship!",
+        "Testing Cheap Football Boots vs Pro Match Boots!",
+        "How I Doubled My Football Stamina in 14 Days",
+        "Recreating Impossible Champions League Free Kicks!",
+        "3 Mindset Secrets Every Young Footballer Needs Before Kickoff",
+        "Crossbar Challenge With Extreme Forfeits!",
+        "Day in the Life of a Student Athlete & Creator"
+      ]
+    };
+
+    function generateYoutubeIdeas() {
+      const cat = document.getElementById('lozziniho-category').value;
+      let pool = [];
+      if (cat === 'all') pool = [...LOZZINIHO_IDEAS.mrbeast, ...LOZZINIHO_IDEAS.gaming, ...LOZZINIHO_IDEAS.football];
+      else pool = [...LOZZINIHO_IDEAS[cat]];
+      state.ytIdeasList = pool.sort(() => 0.5 - Math.random()).slice(0, 10);
+      saveState();
+      renderLozzinihoList();
+    }
+
+    function renderLozzinihoList() {
+      const box = document.getElementById('lozziniho-ideas-container');
+      if (!state.ytIdeasList || state.ytIdeasList.length === 0) {
+        generateYoutubeIdeas();
+        return;
+      }
+      box.innerHTML = state.ytIdeasList.map((title, idx) => `
+        <div class="p-3 rounded-xl bg-black/70 border border-cyan-500/30 flex items-center justify-between gap-2 hover:border-cyan-400 transition">
+          <div class="min-w-0">
+            <span class="text-[10px] font-mono text-cyan-400">TITLE #${idx + 1}</span>
+            <div class="text-xs sm:text-sm font-bold text-white leading-snug">${title}</div>
+          </div>
+          <button onclick="selectYoutubeIdea(${idx})" class="shrink-0 btn-hud px-3 py-1.5 rounded-lg bg-cyan-500/25 border border-cyan-400 text-cyan-200 font-display font-bold text-[10px] sm:text-xs hover:bg-cyan-500 hover:text-black">
+            CHOOSE (+20 🪙)
+          </button>
+        </div>
+      `).join('');
+    }
+
+    function selectYoutubeIdea(idx) {
+      const chosen = state.ytIdeasList[idx];
+      if (!chosen) return;
+      state.pinnedYoutubeIdea = chosen;
+      const earned = grantCredits(20);
+      saveState();
+      showHudModal(
+        'YOUTUBE IDEA PINNED!',
+        '🎬',
+        'Pinned to Main Command HUD!',
+        `"${chosen}" is now pinned to your Main Page!`,
+        `+${earned} Credits Awarded by Lozziniho!`
+      );
+    }
+
+    function completePinnedYoutube() {
+      const title = state.pinnedYoutubeIdea;
+      state.pinnedYoutubeIdea = '';
+      saveState();
+      completeTaskWithReward(50, `YouTube Video: ${title}`);
+    }
+
+    // ---------------------------------------------------------------------
+    // TABS & MODALS
+    // ---------------------------------------------------------------------
+    function switchTab(tab) {
+      document.querySelectorAll('.tab-view').forEach(v => v.classList.remove('active'));
+      document.getElementById('view-' + tab).classList.add('active');
+
+      document.querySelectorAll('.nav-tab').forEach(b => {
+        b.className = 'nav-tab flex flex-col items-center justify-center py-1.5 rounded-xl text-slate-400 hover:text-white';
+      });
+      document.getElementById('nav-btn-' + tab).className = 'nav-tab flex flex-col items-center justify-center py-1.5 rounded-xl text-amber-300 bg-amber-500/15 border border-amber-400/45';
+
+      if (tab === 'arcade') initStreetFighter();
+      if (tab === 'city') { initCityCanvas(); if (!animalMatch) setupNewAnimalFight(); }
+    }
+
+    function showHudModal(tag, emoji, heading, text, sub, customBtns) {
+      document.getElementById('modal-tag').textContent = tag;
+      document.getElementById('modal-emoji').textContent = emoji;
+      document.getElementById('modal-heading').textContent = heading;
+      document.getElementById('modal-text').textContent = text;
+      document.getElementById('modal-sub').textContent = sub || '';
+      document.getElementById('modal-buttons').innerHTML = customBtns || `
+        <button onclick="closeHudModal()" class="btn-hud px-6 py-2.5 rounded-xl bg-amber-400 text-black font-display font-bold text-sm hover:bg-amber-300">
+          ACKNOWLEDGE
+        </button>
+      `;
+      document.getElementById('hud-modal').classList.remove('hidden');
+    }
+
+    function closeHudModal() {
+      document.getElementById('hud-modal').classList.add('hidden');
+    }
+
+    // BOOTSTRAP
+    window.onload = function() {
+      checkDailyResets();
+      refreshTopAndMainHUD();
+      renderHomeHabitsAndTodos();
+      renderDailyQuests();
+      renderRewardsPool();
+      renderCalendarView();
+      renderShop();
+      renderChatFeeds();
+      renderLozzinihoList();
+      initCityCanvas();
+      animateCity();
+      setupNewAnimalFight();
+    };
+  </script>
+</body>
+</html>
